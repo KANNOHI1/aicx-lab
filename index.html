@@ -67,6 +67,32 @@ header{position:sticky;top:0;z-index:50;backdrop-filter:blur(14px);
 .bar{height:6px;border-radius:99px;background:rgba(255,255,255,.08);overflow:hidden;margin-top:10px}
 .bar>i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));width:0;transition:.5s}
 
+.hero-title{font-size:clamp(15px,4.9vw,21px);white-space:nowrap;letter-spacing:-.01em}
+.hero-sub{font-size:12.5px;color:var(--accent2);font-weight:700;margin-top:3px;letter-spacing:.08em}
+
+
+/* glossary */
+.term{border-bottom:1px dotted rgba(124,224,195,.85);color:#a8ecd8;cursor:help}
+.term:active{background:rgba(124,224,195,.16);border-radius:3px}
+.kw span[data-term]{cursor:pointer}
+.kw span[data-term]:active{background:rgba(124,224,195,.3)}
+.sheet-bd{position:fixed;inset:0;z-index:60;display:none;background:rgba(0,0,0,.5)}
+.sheet-bd.on{display:block}
+.sheet{position:fixed;inset:auto 0 0;z-index:61;max-height:62vh;overflow:auto;
+  border-top:1px solid var(--line2);background:rgba(9,13,26,.985);
+  box-shadow:0 -20px 60px rgba(0,0,0,.55);
+  padding:18px max(16px,calc((100% - 720px)/2)) calc(24px + env(safe-area-inset-bottom));
+  transform:translateY(105%);transition:transform 220ms ease}
+.sheet.on{transform:translateY(0)}
+.sheet h2{font-size:19px;color:var(--accent2);margin:0 44px 4px 0}
+.sheet .yomi{font-size:12px;color:var(--muted);margin-bottom:10px}
+.sheet p{margin:0;font-size:14.5px;line-height:1.85;color:#dde6f5}
+.sheet .where{margin-top:12px;font-size:11.5px;color:var(--muted);
+  border-top:1px solid var(--line);padding-top:10px}
+.sheet-x{position:absolute;top:12px;right:14px;width:34px;height:34px;border-radius:50%;
+  background:rgba(255,255,255,.08);border:1px solid var(--line);color:var(--text);
+  font-size:18px;cursor:pointer;line-height:1}
+
 /* lesson content */
 .lead{font-size:13px;color:var(--muted);margin:6px 0 0}
 .body h3{font-size:15px;margin:22px 0 6px;color:var(--accent2)}
@@ -147,7 +173,8 @@ footer{text-align:center;font-size:11px;color:var(--muted);padding:30px 0 10px}
 <section id="home" class="view on">
 
   <div class="card">
-    <h1 style="font-size:19px">AIエージェント・ストラテジスト 学習ラボ</h1>
+    <h1 class="hero-title">AIエージェント・ストラテジスト</h1>
+    <div class="hero-sub">学習ラボ</div>
     <p class="lead">AICX認定資格・第2回試験（受験期間 2026/10/1〜31）合格まで。公式シラバス Ver1.2（全6章32セクション）準拠。</p>
     <div class="bar"><i id="progBar"></i></div>
     <p class="lead" id="progText" style="margin-top:8px"></p>
@@ -182,6 +209,15 @@ footer{text-align:center;font-size:11px;color:var(--muted);padding:30px 0 10px}
 </section>
 
 </main>
+
+<div id="sheetBd" class="sheet-bd"></div>
+<aside id="sheet" class="sheet" aria-hidden="true">
+  <button class="sheet-x" id="sheetX" aria-label="close">x</button>
+  <h2 id="sheetT"></h2>
+  <div class="yomi" id="sheetY"></div>
+  <p id="sheetB"></p>
+  <div class="where" id="sheetW"></div>
+</aside>
 
 <footer>AICX Lab — 個人学習用 / 教材は公式シラバスの到達目標に基づく自作コンテンツ<br>公式テキストの内容は含みません</footer>
 
@@ -380,6 +416,151 @@ const LESSONS=[
  {n:14,t:'最終確認・模試③・直前チェック',sec:'全範囲',ready:false}
 ];
 
+
+/* ============ 用語集 ============ */
+const GLO={
+ 'LLM':{y:'Large Language Model／大規模言語モデル',w:'Sec 1',
+  d:'膨大な文章を学習し、「次に来る言葉」を確率で予測することで文章を生成するAI。ChatGPTやClaudeの中身がこれ。検索して正解を取り出しているのではなく確率で生成しているため、もっともらしい嘘（ハルシネーション）が起きる。AIエージェントの「頭脳」にあたる。'},
+ 'RAG':{y:'Retrieval-Augmented Generation／検索拡張生成',w:'Sec 14',
+  d:'「まず社内文書を検索し、見つかった文章をLLMに渡してから答えさせる」仕組み。LLMは社内情報を知らないので、そのままでは自社の質問に答えられない。RAGはその穴を埋める標準手段。精度が悪いとき「検索側が悪いのか（欲しい文書を拾えていない）／生成側が悪いのか（拾えたのに答えを間違えた）」を切り分けられることが試験の到達目標。'},
+ 'MCP':{y:'Model Context Protocol',w:'Sec 5',
+  d:'AIエージェントが外部ツールやシステムに接続するための共通規格。従来はツールごとに個別の繋ぎ込みが必要だったが、MCPに対応していれば共通の作法で接続できる。エージェントの「手足」を増やすための標準インターフェースと考えるとよい。'},
+ 'RPA':{y:'Robotic Process Automation',w:'Sec 4',
+  d:'決められた手順どおりに画面操作やデータ転記を自動実行するツール。手順が確定していて入力が構造化データなら、AIエージェントより安く速く確実。弱点は例外処理で、想定外が来ると止まる。「手順を全部書き下せるか？」がAIエージェントとの使い分けの判定軸。'},
+ 'BPR':{y:'Business Process Re-engineering／業務改革',w:'Sec 10',
+  d:'既存の業務プロセスを前提とせず、目的から業務そのものを設計し直すこと。この試験の重要な思想は「業務を見直さずにAIを載せると、非効率を高速に実行するだけになる」。自動化の前にBPRを通すのがストラテジストの職責。'},
+ 'ECRS':{y:'イクルス／排除・結合・交換・簡素化',w:'Sec 10',
+  d:'業務改善の検討順序を示すフレーム。①Eliminate（排除：そもそもやめられないか）②Combine（結合：まとめられないか）③Rearrange（交換：順序や担当を入れ替えられないか）④Simplify（簡素化：単純にできないか）。重要なのは順番で、まず「やめる」を検討する。いきなり自動化に飛ぶのが典型的な失敗。'},
+ 'IPO':{y:'Input-Process-Output',w:'Sec 11',
+  d:'業務を「入力→処理→出力」の3点で捉える最も基本的な可視化フレーム。何が入ってきて、何をして、何が出ていくか。粒度が粗いので全体像の把握向き。AIエージェントの三位一体（頭脳・記憶・手足）とは別概念なので混同しないこと。'},
+ 'SIPOC':{y:'シポック／Supplier-Input-Process-Output-Customer',w:'Sec 11',
+  d:'IPOの前後を伸ばして「誰から受け取り、誰に渡すか」まで含めたフレーム。Supplier（供給者）-Input（入力）-Process（処理）-Output（出力）-Customer（顧客）。部門をまたぐ業務で、関係者と受け渡し地点を明らかにしたいときに使う。'},
+ 'HTA':{y:'Hierarchical Task Analysis／階層的タスク分析',w:'Sec 11',
+  d:'業務を大タスク→中タスク→小タスクへと階層的に分解する手法。IPO・SIPOCが横の流れを見るのに対し、HTAは縦に掘る。AIエージェントに渡せる粒度（＝手順として指示できる細かさ）まで落とすために使う。'},
+ 'PoC':{y:'Proof of Concept／概念実証',w:'Sec 17',
+  d:'本格導入の前に小規模で試し、実現可能性を検証する工程。試験で繰り返し問われるのは「PoC貧乏」＝PoCを繰り返すだけで本番に至らない状態。原因は成功条件を事前に定義していないこと。何をもって次に進むかを先に決めるのが正しい進め方。'},
+ 'KPI':{y:'Key Performance Indicator／重要業績評価指標',w:'Sec 18・25',
+  d:'目標の達成度を測る指標。AI導入では導入前にベースライン（現状値）を測っておかないと効果を証明できない。この試験では効果・定着・精度の3層それぞれに指標を置く考え方が問われる。'},
+ 'ROI':{y:'Return On Investment／投資対効果',w:'Sec 6',
+  d:'投じたコストに対してどれだけの効果が返るか。ストラテジストの4大コアスキルのひとつ。「AIエージェントを入れたい」という相談に対し、ROIを算定せずに実装へ進む判断は職責の放棄として誤答になる。'},
+ 'UX':{y:'User Experience／利用者体験',w:'Sec 6',
+  d:'利用者が得る体験の質。AI導入の価値は業務効率（時間削減）だけではなく、利用者体験・担当者体験・意思決定支援など複数観点で説明できることが到達目標。'},
+ 'CoE':{y:'Center of Excellence',w:'Sec 24',
+  d:'AI推進の専門組織を中核に置き、各事業部門を支援する体制類型。中央集権型（本社が一括推進）と分散型（各部門が独自推進）の中間で、標準やナレッジを中央に集めつつ実行は現場が担う。どれが優れているかではなく、自社の状況に合う型を選べることが問われる。'},
+ 'SLM':{y:'Small Language Model／小型言語モデル',w:'Sec 8',
+  d:'LLMを小型化したモデル。安く速く、自社内やデバイス上で動かせる。全てを大型モデルで処理せず難易度に応じて使い分ける発想（モデルルーティング）と結びつく。'},
+ 'API':{y:'Application Programming Interface',w:'Sec 5',
+  d:'ソフトウェア同士が機能をやり取りするための接続口。AIエージェントが外部システムを操作する（＝手足を持つ）際の基本手段。MCPはこの接続を共通規格化したもの。'},
+ 'MVP':{y:'Minimum Viable Product／実用最小限の製品',w:'Sec 19',
+  d:'価値を確かめられる最小構成で作り、動かしながら育てる考え方。最初から完全自律を目指さず、現実的な到達点から始めるという自動化レベルの思想と対になる。'},
+ 'DX':{y:'Digital Transformation',w:'—',
+  d:'デジタル技術による事業・業務・組織の変革。AI活用はDXの一部だが、この資格が扱うのはツール導入ではなく業務と組織の再設計であり、そこがDX推進担当の職責と重なる。'},
+ 'As-Is':{y:'アズイズ／現状',w:'Sec 9',
+  d:'今どうなっているかの姿。To-Be（あるべき姿）と対で使う。As-Isを正確に把握せずTo-Beを描くと、机上の理想論になって現場が動かない。'},
+ 'To-Be':{y:'トゥービー／あるべき姿',w:'Sec 9',
+  d:'こうあるべきという将来の業務の姿。As-Is（現状）との差分が、そのまま改善すべき対象になる。'},
+ '5Dモデル':{y:'ファイブディー・モデル',w:'Sec 28-32',
+  d:'AIエージェント実装の5段階。①Discovery（発見・選定）②Definition（定義・構造化）③Design（設計）④Development & PoC（開発・検証）⑤Deployment & Scale（本運用・横展開）。この試験の背骨にあたるフレームで、各章の道具が5Dのどの段階で使われるかを結びつけて理解するのが要点。'},
+ '三位一体':{y:'さんみいったい',w:'Sec 2',
+  d:'AIエージェントを構成する頭脳（LLM＝判断）・記憶（履歴や社内文書＝判断材料）・手足（ツール連携＝実行）の3要素。シラバスが明示するキーワード。ChatGPTに質問するだけの使い方には手足がなく、だから「言うだけで何もしない」状態にとどまる。'},
+ 'ハルシネーション':{y:'hallucination／幻覚',w:'Sec 7',
+  d:'AIがもっともらしい嘘を出力する現象。生成AIが検索ではなく確率的な生成だから起きる、構造的な性質。ゼロにはできないので、ガードレール・出典明示・人間の介入といった対策で管理する対象として扱う。'},
+ 'ガードレール':{y:'guardrail',w:'Sec 7',
+  d:'AIエージェントが逸脱した動きをしないよう設ける制約。扱ってよいデータ、実行してよい操作、出力してはいけない内容などをあらかじめ枠として定める。権限管理・人間の介入と並ぶリスク対策の柱。'},
+ '有人確認':{y:'ゆうじんかくにん',w:'Sec 3',
+  d:'AIが処理した結果を、実行前に人が承認するチェックポイント。判断基準は「業務のリスクが高いほど挟む」。精度が上がったら外す、ではない。発注・支払い・対外送信など失敗の代償が大きい処理には残すのが正しい設計。'},
+ '権限管理':{y:'けんげんかんり',w:'Sec 7・15',
+  d:'誰が・どのデータに・どの操作までできるかの管理。AIエージェントは人の代わりにシステムを操作するため、人間と同じく権限を絞る必要がある。絞らないと、閲覧権限のない情報まで回答に混ざる事故が起きる。'},
+ '構造化データ':{y:'こうぞうかデータ',w:'Sec 13',
+  d:'表形式など、決まった型に整理されたデータ。列と行が定義されており機械が扱いやすい。RPAが得意とする入力形式。'},
+ '非構造化データ':{y:'ひこうぞうかデータ',w:'Sec 13',
+  d:'メール本文・議事録・自由記述アンケートなど、決まった型を持たないデータ。従来のシステムでは扱いにくく、ここを処理できることが生成AI／AIエージェントの最大の強み。'},
+ 'メタデータ':{y:'metadata',w:'Sec 13・16',
+  d:'データそのものではなく、そのデータを説明する情報（作成日・更新日・出典・タグなど）。AIエージェントが参照しやすい情報設計に不可欠で、これが無いと「いつの情報か」「誰が書いたか」を判断できない。'},
+ '暗黙知':{y:'あんもくち',w:'Sec 12',
+  d:'個人の経験や勘として持たれ、言語化されていない知識。ベテランの判断基準などが典型。AI活用の前提として、これを形式知へ変換（言語化）する作業が必要になる。'},
+ '形式知':{y:'けいしきち',w:'Sec 12',
+  d:'文書やマニュアルとして言語化され、他者が参照できる知識。暗黙知を形式知に変えることで、初めてAIエージェントが参照できる材料になる。'},
+ 'チャンク':{y:'chunk',w:'Sec 14',
+  d:'RAGで文書を検索可能にするために分割した文章の断片。分割が大きすぎると余計な情報が混ざり、小さすぎると文脈が切れる。RAGの検索精度を左右する設計項目。'},
+ '自律性':{y:'じりつせい',w:'Sec 2・19',
+  d:'AIエージェントがどこまで人の確認を挟まずに動くかの度合い。この試験の一貫した思想は「高ければ偉いのではなく、業務のリスクに応じて選ぶもの」。'},
+ 'トリガー':{y:'trigger／起動条件',w:'Sec 20',
+  d:'ワークフローを開始させるきっかけ。メール受信、申請提出、時刻到来、閾値超過など。実行内容であるアクションと明確に分けて設計するのが基本。'},
+ 'モデルルーティング':{y:'model routing',w:'Sec 1',
+  d:'タスクの難易度に応じてAIモデルを使い分ける仕組み。簡単な分類は軽いモデル、難しい判断だけ高性能モデルへ。コストと品質のバランスを取る手段で、ROI設計に直結する。'},
+ 'マルチモーダル':{y:'multimodal',w:'Sec 8',
+  d:'文章だけでなく画像・音声・動画なども同時に扱えること。店頭写真から什器の状態を判定するなど、これまでテキスト化が必要だった業務が直接扱えるようになる。'},
+ '推論モデル':{y:'すいろんモデル／reasoning model',w:'Sec 8',
+  d:'答えを出す前に段階的に考える過程を挟むモデル。複雑な判断の精度が上がる一方、時間とコストがかかる。どの業務に必要かを見極めるのがトレンド評価の観点。'},
+ 'チェンジマネジメント':{y:'change management',w:'Sec 26',
+  d:'変革に対する現場の不安や抵抗を前提として、説明・巻き込み・教育・定着支援を計画的に進めること。ツールを入れても組織の仕組みが変わらなければ現場は動かない、という前提に立つ。'},
+ 'コンテキストエンジニアリング':{y:'context engineering',w:'Sec 22',
+  d:'AIに渡す情報そのものを設計すること。情報の欠落・ノイズ・粒度を点検する。プロンプトの書き方を工夫する前に、そもそも渡している材料が正しいかを問う考え方。'},
+ '汚い自動化':{y:'きたないじどうか',w:'Sec 10',
+  d:'業務プロセスを見直さないまま、今のやり方をそのまま自動化してしまうこと。非効率を高速に実行するだけになり、効果が出ない。BPRを先に通すべき理由。'}
+};
+
+/* ============ 用語リンク化 ============ */
+const GTERMS=Object.keys(GLO).sort((a,b)=>b.length-a.length);
+const gesc=t=>t.replace(/[.*+?^${}()|[\]\\-]/g,'\\$&');
+const GRE=new RegExp('(^|[^A-Za-z0-9_])('+GTERMS.map(gesc).join('|')+')(?![A-Za-z0-9_])','g');
+const GSKIP=new Set(['SCRIPT','STYLE','BUTTON']);
+
+function linkify(root,cap){
+  if(!root)return; cap=cap||2;
+  const used={};
+  const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{
+    acceptNode(n){
+      if(!n.nodeValue.trim())return NodeFilter.FILTER_REJECT;
+      let p=n.parentElement;
+      while(p&&p!==root.parentElement){
+        if(GSKIP.has(p.tagName)||p.classList.contains('term')
+           ||p.classList.contains('opt')||p.classList.contains('kw'))return NodeFilter.FILTER_REJECT;
+        p=p.parentElement;
+      }
+      return NodeFilter.FILTER_ACCEPT;
+    }});
+  const nodes=[];while(w.nextNode())nodes.push(w.currentNode);
+  nodes.forEach(n=>{
+    const txt=n.nodeValue;GRE.lastIndex=0;
+    if(!GRE.test(txt))return;GRE.lastIndex=0;
+    const frag=document.createDocumentFragment();let last=0,m,hit=false;
+    while((m=GRE.exec(txt))!==null){
+      const t=m[2];
+      if((used[t]||0)>=cap)continue;
+      used[t]=(used[t]||0)+1;hit=true;
+      const start=m.index+m[1].length;
+      if(start>last)frag.appendChild(document.createTextNode(txt.slice(last,start)));
+      const sp=document.createElement('span');
+      sp.className='term';sp.dataset.term=t;sp.textContent=t;
+      frag.appendChild(sp);last=start+t.length;
+    }
+    if(!hit)return;
+    if(last<txt.length)frag.appendChild(document.createTextNode(txt.slice(last)));
+    n.parentNode.replaceChild(frag,n);
+  });
+}
+
+/* ============ 用語シート ============ */
+const shBd=document.getElementById('sheetBd'),sh=document.getElementById('sheet');
+function openTerm(t){
+  const g=GLO[t];if(!g)return;
+  document.getElementById('sheetT').textContent=t;
+  document.getElementById('sheetY').textContent=g.y||'';
+  document.getElementById('sheetB').textContent=g.d;
+  document.getElementById('sheetW').textContent=g.w&&g.w!=='—'?('公式シラバス '+g.w):'';
+  shBd.classList.add('on');sh.classList.add('on');sh.setAttribute('aria-hidden','false');
+}
+function closeTerm(){shBd.classList.remove('on');sh.classList.remove('on');sh.setAttribute('aria-hidden','true');}
+shBd.onclick=closeTerm;
+document.getElementById('sheetX').onclick=closeTerm;
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeTerm();});
+document.addEventListener('click',e=>{
+  const el=e.target.closest?e.target.closest('[data-term]'):null;
+  if(el)openTerm(el.dataset.term);
+});
+
 /* ============ state ============ */
 const KEY='aicx-lab-v1';
 let ST=JSON.parse(localStorage.getItem(KEY)||'{}');
@@ -420,9 +601,10 @@ function renderHome(){
       ${ch.s.map(s=>`<div style="margin:12px 0">
         <div style="font-size:13.5px;font-weight:700">${s[0]}. ${s[1]}</div>
         <div style="font-size:12.5px;color:var(--muted);margin-top:2px">${s[2]}</div>
-        <div class="kw">${s[3].split(' / ').map(k=>`<span>${k}</span>`).join('')}</div>
+        <div class="kw">${s[3].split(' / ').map(k=>`<span${GLO[k]?` data-term="${k}"`:''}>${k}${GLO[k]?' &#9432;':''}</span>`).join('')}</div>
       </div>`).join('')}
     </div>`).join('');
+  linkify(document.getElementById('syllabus'),1);
 }
 
 /* ============ lesson ============ */
@@ -467,6 +649,8 @@ function openLesson(n){
     </div>`).join('');
 
   bind();
+  linkify(document.querySelector('#lessonBody .body'),2);
+  document.querySelectorAll('#lessonBody .exp, #lessonBody .case').forEach(el=>linkify(el,1));
   show('lesson'); window.scrollTo(0,0);
 }
 
