@@ -1,0 +1,555 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="dark">
+<meta name="description" content="AICX認定 AIエージェント・ストラテジスト 学習ラボ">
+<title>AICX Lab｜AIエージェント・ストラテジスト</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ctext y='26' font-size='26'%3E%F0%9F%A7%A0%3C/text%3E%3C/svg%3E">
+<style>
+:root{
+  --bg:#0b1020; --bg2:#070b16;
+  --card:rgba(22,30,52,.9); --card2:rgba(30,40,68,.95);
+  --line:rgba(120,160,220,.22); --line2:rgba(120,160,220,.4);
+  --text:#e8edf7; --muted:#93a2bd;
+  --accent:#4da3ff; --accent2:#7ce0c3;
+  --ok:#3ddc97; --ng:#ff6b6b; --warn:#ffb454;
+  --safe:min(760px,calc(100% - 28px));
+  --r:16px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{background:var(--bg2);color:var(--text);
+  font-family:"Hiragino Sans","Yu Gothic","Noto Sans JP",system-ui,sans-serif;
+  scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{margin:0;overflow-x:hidden;line-height:1.75;
+  background:radial-gradient(900px 500px at 20% -5%,rgba(77,163,255,.16),transparent 60%),
+             radial-gradient(700px 500px at 90% 0%,rgba(124,224,195,.10),transparent 60%),
+             linear-gradient(160deg,var(--bg),var(--bg2));
+  background-attachment:fixed;padding-bottom:80px}
+.wrap{width:var(--safe);margin:0 auto}
+h1,h2,h3{line-height:1.4;margin:0}
+a{color:var(--accent)}
+small{color:var(--muted)}
+
+/* header */
+header{position:sticky;top:0;z-index:50;backdrop-filter:blur(14px);
+  background:linear-gradient(180deg,rgba(7,11,22,.95),rgba(7,11,22,.72));
+  border-bottom:1px solid var(--line);padding:10px 0}
+.hd{display:flex;align-items:center;gap:10px;justify-content:space-between}
+.brand{font-size:15px;font-weight:800;letter-spacing:.02em}
+.brand span{color:var(--accent)}
+.counts{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.chip{font-size:11px;padding:5px 9px;border-radius:999px;border:1px solid var(--line);
+  background:rgba(255,255,255,.03);color:var(--muted);white-space:nowrap}
+.chip b{color:var(--text);font-size:12px}
+.chip.hot{border-color:rgba(255,180,84,.5);color:#ffd7a0}
+.chip.hot b{color:var(--warn)}
+
+/* generic */
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);
+  padding:16px;margin:12px 0;box-shadow:0 18px 46px rgba(0,0,0,.32)}
+.sec-title{display:flex;align-items:baseline;gap:8px;margin:26px 0 6px}
+.sec-title h2{font-size:17px}
+.sec-title small{font-size:11px}
+.btn{display:block;width:100%;text-align:left;font:inherit;color:inherit;cursor:pointer;
+  background:var(--card2);border:1px solid var(--line);border-radius:14px;padding:14px;
+  transition:.15s;margin:8px 0}
+.btn:active{transform:scale(.99)}
+.btn:disabled{opacity:.45;cursor:default}
+.row{display:flex;align-items:center;gap:10px}
+.grow{flex:1;min-width:0}
+.pill{font-size:10.5px;padding:3px 8px;border-radius:999px;border:1px solid var(--line);
+  color:var(--muted);white-space:nowrap}
+.pill.done{border-color:rgba(61,220,151,.5);color:var(--ok)}
+.pill.now{border-color:rgba(77,163,255,.6);color:var(--accent)}
+.bar{height:6px;border-radius:99px;background:rgba(255,255,255,.08);overflow:hidden;margin-top:10px}
+.bar>i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));width:0;transition:.5s}
+
+/* lesson content */
+.lead{font-size:13px;color:var(--muted);margin:6px 0 0}
+.body h3{font-size:15px;margin:22px 0 6px;color:var(--accent2)}
+.body h4{font-size:13.5px;margin:16px 0 4px;color:#cfe0ff}
+.body p{margin:8px 0;font-size:14.5px}
+.body ul{margin:8px 0;padding-left:1.1em;font-size:14.5px}
+.body li{margin:5px 0}
+.body table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13px;display:block;overflow-x:auto}
+.body th,.body td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+.body th{background:rgba(77,163,255,.12);white-space:nowrap}
+.kw{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.kw span{font-size:11px;padding:4px 9px;border-radius:8px;background:rgba(124,224,195,.12);
+  border:1px solid rgba(124,224,195,.28);color:#a8ecd8}
+.goal{border-left:3px solid var(--accent);background:rgba(77,163,255,.08);
+  padding:10px 12px;border-radius:0 10px 10px 0;font-size:13.5px;margin:10px 0}
+.goal b{color:var(--accent)}
+.tip{border-left:3px solid var(--warn);background:rgba(255,180,84,.08);
+  padding:10px 12px;border-radius:0 10px 10px 0;font-size:13.5px;margin:12px 0}
+.tip b{color:var(--warn)}
+
+/* quiz */
+.q{margin:18px 0}
+.qhead{display:flex;gap:8px;align-items:center;margin-bottom:8px}
+.qno{font-size:11px;color:var(--muted);border:1px solid var(--line);border-radius:8px;padding:2px 8px;white-space:nowrap}
+.qtext{font-size:15px;font-weight:700;line-height:1.6}
+.case{background:rgba(255,255,255,.04);border:1px dashed var(--line2);border-radius:12px;
+  padding:12px;margin:10px 0;font-size:13.5px;white-space:pre-wrap}
+.opt{background:var(--card2);border:1px solid var(--line);border-radius:13px;padding:13px 14px;
+  margin:8px 0;font-size:14px;cursor:pointer;transition:.15s;display:flex;gap:10px;align-items:flex-start}
+.opt:active{transform:scale(.995)}
+.opt .mk{width:22px;height:22px;border-radius:50%;border:1px solid var(--line2);flex:0 0 auto;
+  display:grid;place-items:center;font-size:12px;color:var(--muted);margin-top:1px}
+.opt.correct{border-color:rgba(61,220,151,.7);background:rgba(61,220,151,.12)}
+.opt.correct .mk{border-color:var(--ok);color:var(--ok)}
+.opt.wrong{border-color:rgba(255,107,107,.7);background:rgba(255,107,107,.1)}
+.opt.wrong .mk{border-color:var(--ng);color:var(--ng)}
+.opt.locked{cursor:default;opacity:.72}
+.exp{display:none;margin:10px 0 0;padding:12px;border-radius:12px;font-size:13.5px;
+  background:rgba(255,255,255,.05);border:1px solid var(--line)}
+.exp.show{display:block}
+.exp b{color:var(--accent2)}
+
+/* timer */
+.timer{position:sticky;top:64px;z-index:40;display:flex;gap:8px;align-items:center;
+  background:var(--card2);border:1px solid var(--line2);border-radius:14px;padding:10px 12px;margin:12px 0}
+.timer .t{font-variant-numeric:tabular-nums;font-size:20px;font-weight:800;letter-spacing:.02em}
+.timer .t.over{color:var(--ng)}
+.tbtn{font:inherit;font-size:12px;padding:7px 12px;border-radius:10px;cursor:pointer;
+  background:rgba(77,163,255,.18);border:1px solid var(--line2);color:var(--text)}
+
+/* result */
+.score{text-align:center;padding:20px}
+.score .n{font-size:44px;font-weight:900;letter-spacing:-.02em}
+.score .n.good{color:var(--ok)} .score .n.bad{color:var(--warn)}
+
+/* nav */
+.back{font:inherit;font-size:13px;background:none;border:none;color:var(--accent);
+  cursor:pointer;padding:10px 0;display:inline-flex;gap:6px;align-items:center}
+.view{display:none} .view.on{display:block}
+footer{text-align:center;font-size:11px;color:var(--muted);padding:30px 0 10px}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="hd">
+      <div class="brand">🧠 AICX <span>Lab</span></div>
+      <button class="tbtn" id="resetBtn" style="font-size:11px;padding:5px 10px">記録リセット</button>
+    </div>
+    <div class="counts" id="counts"></div>
+  </div>
+</header>
+
+<main class="wrap">
+
+<!-- ========== HOME ========== -->
+<section id="home" class="view on">
+
+  <div class="card">
+    <h1 style="font-size:19px">AIエージェント・ストラテジスト 学習ラボ</h1>
+    <p class="lead">AICX認定資格・第2回試験（受験期間 2026/10/1〜31）合格まで。公式シラバス Ver1.2（全6章32セクション）準拠。</p>
+    <div class="bar"><i id="progBar"></i></div>
+    <p class="lead" id="progText" style="margin-top:8px"></p>
+  </div>
+
+  <div class="sec-title"><h2>カリキュラム</h2><small>全14回</small></div>
+  <div id="lessonList"></div>
+
+  <div class="sec-title"><h2>試験の要点</h2><small>一次情報</small></div>
+  <div class="card body" style="font-size:14px">
+    <table>
+      <tr><th>試験時間</th><td>75分・多肢選択式・オンライン受験</td></tr>
+      <tr><th>受験料</th><td>14,800円（税込）／申込後キャンセル不可</td></tr>
+      <tr><th>申込締切</th><td>2026年9月20日（公式サイト本文）※画像・プレスは9/25表記。安全側で9/20</td></tr>
+      <tr><th>受験期間</th><td>2026年10月1日〜31日／最終日23:59までに「開始」を押せばOK</td></tr>
+      <tr><th>合否通知</th><td>2026年11月25日（一括通知）。試験サイトで認定証を即発行可</td></tr>
+      <tr><th>合格基準</th><td>非公表</td></tr>
+    </table>
+    <div class="tip"><b>第1回受験者の証言：</b>知識不足では落ちない。落とすのは<b>時間切れ</b>。ケースを読んで判断させる形式で、終盤に手が回らなくなる。<br><br>
+    ただしシラバスVer1.2（2026年7月改訂）で「<b>単純な速読量そのものを評価する主旨ではない</b>」と明記が追加された。第2回は緩和の可能性があるが、前提は崩さず訓練する。</div>
+  </div>
+
+  <div class="sec-title"><h2>シラバス全32セクション</h2><small>到達目標</small></div>
+  <div id="syllabus"></div>
+
+</section>
+
+<!-- ========== LESSON ========== -->
+<section id="lesson" class="view">
+  <button class="back" id="back1">← カリキュラムに戻る</button>
+  <div id="lessonBody"></div>
+</section>
+
+</main>
+
+<footer>AICX Lab — 個人学習用 / 教材は公式シラバスの到達目標に基づく自作コンテンツ<br>公式テキストの内容は含みません</footer>
+
+<script>
+/* ============ 日程 ============ */
+const DATES=[
+  {k:'申込締切',d:'2026-09-20',hot:true},
+  {k:'受験推奨',d:'2026-10-29',hot:false},
+  {k:'合否通知',d:'2026-11-25',hot:false}
+];
+
+/* ============ シラバス（公式 Ver1.2）============ */
+const SYL=[
+ {c:'第1章 生成AIとAIエージェントの基礎',s:[
+  [1,'生成AIの基礎','生成AIの基本的な仕組み、得意領域、限界を理解し、業務適用の前提を説明できる','生成AI / LLM / プロンプト / モデルルーティング'],
+  [2,'AIエージェントの定義と構成要素','頭脳・記憶・手足の関係を理解し、自律性レベルを判断できる','AIエージェント / 三位一体 / 自律性 / ツール連携'],
+  [3,'AIエージェントの起動タイプ','ユーザー起動・イベント起動・スケジュール起動の違いを理解し、業務に適した起動方式を選べる','起動タイプ / イベント / スケジュール / 有人確認'],
+  [4,'RPAとAIエージェントの違い','定型処理と判断が必要な処理を区分し、使い分けられる','RPA / 定型処理 / 非構造化データ / 例外処理'],
+  [5,'エージェントの接続標準 MCP','外部ツールやシステムと接続する意義を理解し、MCPの位置づけを説明できる','MCP / 外部接続 / API / ツール実行'],
+  [6,'AIエージェント導入の価値','利用者体験・担当者体験・業務効率・意思決定支援など、導入価値を複数の観点で説明できる','導入価値 / UX / 業務効率 / ROI'],
+  [7,'AIエージェントのリスクと対策','ハルシネーション・情報漏えい・誤操作・過信などのリスクを理解し、対策方針を整理できる','リスク / ガードレール / 権限管理 / 人間の介入'],
+  [8,'生成AIの発展トレンド','マルチモーダル化・小型化・推論能力強化などを業務適用の観点で評価できる','マルチモーダル / SLM / 推論モデル / トレンド評価']]},
+ {c:'第2章 業務の基礎',s:[
+  [9,'業務の構造的理解','業務を目的・入力・処理・出力・関係者の観点で分解し、As-Isの整理とTo-Beの設計ができる','As-Is / To-Be / 業務構造 / 業務分解'],
+  [10,'BPR（業務改革）の基礎','既存業務をそのまま自動化する危険性を理解し、BPRとECRSを用いて改善余地を整理できる','BPR / ECRS / 汚い自動化 / 業務改革'],
+  [11,'業務可視化の手法','IPO・SIPOC・HTA・業務フロー図を使い分け、AIエージェントに渡せる粒度まで可視化できる','IPO / SIPOC / HTA / 業務フロー図']]},
+ {c:'第3章 AIデータリテラシーとマネジメント',s:[
+  [12,'ナレッジマネジメントの基礎','組織内の知識がどこに存在し、どう流通し、どう更新されるかを整理できる','ナレッジ / 暗黙知 / 形式知 / 知識流通'],
+  [13,'データの種類と特性','構造化・半構造化・非構造化の違いを理解し、AI活用に必要なデータ特性を判断できる','構造化データ / 非構造化データ / メタデータ'],
+  [14,'RAGの仕組み','検索と生成を組み合わせるRAGの基本構造を理解し、精度問題を検索側と生成側に切り分けられる','RAG / チャンク / 検索精度 / 生成品質'],
+  [15,'AIガバナンスと法務','導入時に確認すべきガバナンス・法務・個人情報・権限管理の論点を整理できる','AIガバナンス / 法務 / 個人情報 / 権限'],
+  [16,'AIエージェントが読みやすいデータを作る','粒度・形式・タグ・更新日・出典を整え、参照しやすい情報設計ができる','データ整備 / タグ / 出典 / 更新管理'],
+  [17,'AIプロジェクトの進め方','PoC・検証・本運用へ進める基本プロセスと役割分担を理解できる','PoC / 検証 / 体制 / プロジェクト運営'],
+  [18,'AIプロジェクトの成功の定義','成功を効果・定着・精度の3層で定義し、導入前に測定指標とベースラインを設計できる','3層フレームワーク / 効果層 / 定着層 / 精度層']]},
+ {c:'第4章 自動化レベルとワークフロー設計',s:[
+  [19,'自動化レベルの進化論と実務における最適解','段階的に理解し、最初から完全自律を目指さず現実的な到達点を判断できる','自動化レベル / MVP / ワークフロー型 / 段階導入'],
+  [20,'ワークフロー設計：トリガーとアクション','開始条件と実行処理を分け、基本ワークフローを設計できる','トリガー / アクション / 連鎖 / 業務イベント'],
+  [21,'ワークフロー設計：変数と条件分岐','顧客・案件・金額・リスクなどの変数を使い、条件に応じて処理を分岐させる設計ができる','変数 / 条件分岐 / ルール / 例外処理'],
+  [22,'コンテキストエンジニアリング概論','渡す情報の欠落・ノイズ・粒度を点検し、プロンプト以前の情報設計を改善できる','コンテキスト / 情報粒度 / ノイズ / 指示設計']]},
+ {c:'第5章 人と組織から考えるAI時代の組織設計',s:[
+  [23,'AIエージェント導入と組織文化の変革','道具ではなく業務を共に進める存在として捉え、組織文化への影響を説明できる','組織文化 / 権限委譲 / 現場受容 / 変革'],
+  [24,'AIエージェント推進の組織類型','中央集権型・分散型・CoE型などの特徴を理解し、自社に合う体制を判断できる','推進体制 / CoE / 事業部門 / IT部門'],
+  [25,'人材評価と指標の再設計','成果指標・人材評価・役割定義の変化を理解し、評価設計の論点を整理できる','KPI / 人材評価 / 役割定義 / 生産性'],
+  [26,'チェンジマネジメント','現場の不安や抵抗を前提に、説明・巻き込み・教育・定着支援の進め方を設計できる','チェンジマネジメント / 抵抗 / 教育 / 定着'],
+  [27,'推進者が現場で直面する7つの問いと答え方','経営層・現場・IT・法務から出る問いに対し、論点を整理して答えられる','ROI / 仕事の変化 / 責任分界 / 法務調整']]},
+ {c:'第6章 AIエージェントを実装する5Dモデル',s:[
+  [28,'5D Step1：Discovery','業務課題を発見し、AIエージェント化の候補を洗い出し、対象業務を選定できる','Discovery / 課題発見 / 候補洗い出し / 選定'],
+  [29,'5D Step2：Definition','目的・範囲・成功条件・制約を定義し、関係者と認識を合わせられる','Definition / 成功定義 / スコープ / 要件整理'],
+  [30,'5D Step3：Design','業務フロー・データ・プロンプト・ツール連携・人の介入点を設計できる','Design / プロンプト / データ / 介入設計'],
+  [31,'5D Step4：Development & PoC','精度・定着・効果の観点を理解し、改善サイクルを回せる','Development / PoC / 検証 / 改善サイクル'],
+  [32,'5D Step5：Deployment & Scale','本運用移行・教育・運用ルール・横展開・継続改善を設計し、定着まで見通せる','Deployment / Scale / 運用 / 横展開']]}
+];
+
+/* ============ レッスン ============ */
+const L1_BODY = `
+<div class="goal"><b>この回のゴール</b><br>生成AIとAIエージェントの違いを構造で説明でき、「この業務はRPAか、AIエージェントか」を判断できるようになる。</div>
+
+<h3>Section 1｜生成AIの基礎</h3>
+<div class="kw"><span>生成AI</span><span>LLM</span><span>プロンプト</span><span>モデルルーティング</span></div>
+<p>核はひとつ。生成AIは<b>「次に来る言葉を確率で選び続ける」機械</b>です。データベースを検索して正解を取り出しているのではない。ここが全ての性質の出発点になります。</p>
+<table>
+<tr><th>得意</th><th>限界</th></tr>
+<tr><td>文章の要約・変換・分類・生成</td><td><b>正確さを保証できない</b>（もっともらしい嘘を作る）</td></tr>
+<tr><td>曖昧な指示から意図を汲む</td><td><b>最新情報・社内情報を知らない</b></td></tr>
+<tr><td>非構造化データ（文章・画像）の処理</td><td><b>計算・厳密なルール適用が苦手</b></td></tr>
+</table>
+<h4>モデルルーティング</h4>
+<p>「タスクの難易度に応じてモデルを使い分ける」考え方。簡単な分類に高価な大型モデルを使わず軽いモデルへ回し、難しい判断だけ高性能モデルへ送る。<b>コスト管理＝ROI設計の話</b>なので、ストラテジスト側の論点として出ます。</p>
+
+<h3>Section 2｜AIエージェントの定義と構成要素 ★最重要</h3>
+<div class="kw"><span>AIエージェント</span><span>三位一体</span><span>自律性</span><span>ツール連携</span></div>
+<p>シラバスが「<b>三位一体</b>」という語を明示しています。ここは確実に出ます。</p>
+<table>
+<tr><th>要素</th><th>正体</th><th>無いとどうなるか</th></tr>
+<tr><td><b>頭脳</b></td><td>LLM。何をすべきか判断する</td><td>判断できない＝ただの自動実行（RPA）</td></tr>
+<tr><td><b>記憶</b></td><td>会話履歴・社内文書・DB。判断の材料</td><td>毎回ゼロから。文脈も社内事情も知らない</td></tr>
+<tr><td><b>手足</b></td><td>ツール連携。実際にメールを送る、システムを叩く</td><td>「こうすべきです」と言うだけで何もしない＝チャットボット</td></tr>
+</table>
+<p><b>ChatGPTに質問するだけ</b>では、頭脳と（限定的な）記憶しかない。<b>手足がついて初めてエージェント</b>です。</p>
+<div class="tip"><b>自律性レベルの思想：</b>「どこまで人間の確認を挟まずに走らせるか」の度合い。<b>高ければ偉いのではなく、業務のリスクに応じて選ぶもの</b>。この思想はSection 19（自動化レベル）で再登場します。</div>
+
+<h3>Section 3｜AIエージェントの起動タイプ</h3>
+<div class="kw"><span>起動タイプ</span><span>イベント</span><span>スケジュール</span><span>有人確認</span></div>
+<table>
+<tr><th>起動タイプ</th><th>いつ動くか</th><th>向く業務</th></tr>
+<tr><td><b>ユーザー起動</b></td><td>人が頼んだとき</td><td>都度発生・件数が読めない業務。問い合わせ対応</td></tr>
+<tr><td><b>イベント起動</b></td><td>何かが起きたとき（メール受信・申請提出・閾値超え）</td><td>発生タイミングが不定で、即応が要る業務</td></tr>
+<tr><td><b>スケジュール起動</b></td><td>決めた時刻（毎朝8時・月初）</td><td>定期業務。日次レポート、月次集計</td></tr>
+</table>
+<p><b>有人確認</b>は「動いた後、人が承認してから実行に移す」チェックポイント。<b>リスクの高い業務ほど有人確認を挟む</b>。Section 7（リスク対策）と19（自動化レベル）に直結する横断論点です。</p>
+
+<h3>Section 4｜RPAとAIエージェントの違い ★頻出</h3>
+<div class="kw"><span>RPA</span><span>定型処理</span><span>非構造化データ</span><span>例外処理</span></div>
+<table>
+<tr><th></th><th>RPA</th><th>AIエージェント</th></tr>
+<tr><td>動き方</td><td><b>決められた手順を、そのとおりに</b></td><td><b>目標を与えると、手順を自分で組む</b></td></tr>
+<tr><td>得意な入力</td><td>構造化データ（決まった形式の表・帳票）</td><td><b>非構造化データ</b>（メール本文・議事録・自由記述）</td></tr>
+<tr><td>想定外が来たら</td><td>止まる / エラー</td><td>判断して処理を試みる（ただし間違うこともある）</td></tr>
+<tr><td>正確性</td><td>高い（同じ入力なら必ず同じ出力）</td><td>保証されない</td></tr>
+</table>
+<h4>判定の軸はひとつ</h4>
+<p><b>「手順を全部書き下せるか？」</b><br>
+・書き下せる → <b>RPA</b>。安くて速くて確実<br>
+・書き下せない（毎回判断が要る、入力の形がバラバラ） → <b>AIエージェント</b></p>
+<div class="tip"><b>例外処理が急所：</b>RPAの実務が破綻する最大の原因は「例外パターンが増えすぎてメンテナンスが回らない」こと。AIエージェントはそこを吸収できる——<b>が、代わりに正確性の保証を失う</b>。このトレードオフが問われます。<br><br>
+<b>やってはいけない典型：</b>業務プロセスを見直さずAIエージェントを載せる。<b>非効率を高速に実行するだけ</b>になる（Section 10のBPRに直結）。</div>
+`;
+
+const L1_QUIZ=[
+ {q:'AIエージェントの「三位一体」を構成する3要素はどれか。',
+  o:['頭脳・記憶・手足','入力・処理・出力','設計・実装・運用','データ・モデル・API'],
+  a:0,e:'シラバスSection 2の明示キーワード。<b>頭脳（LLM＝判断）／記憶（履歴・社内文書＝材料）／手足（ツール連携＝実行）</b>。「入力・処理・出力」はIPO（Section 11）で別概念なので混同しないこと。'},
+
+ {q:'「ChatGPTに質問して回答をもらう」だけの使い方で、決定的に欠けている要素はどれか。',
+  o:['手足（ツール連携）','頭脳（LLM）','記憶（会話履歴）','どれも欠けていない'],
+  a:0,e:'頭脳はある。記憶も会話の範囲では持つ。<b>欠けているのは手足</b>＝実際に業務システムを動かす能力。だから「言うだけで何もしない」状態にとどまる。ここがチャットボットとエージェントの境目です。'},
+
+ {q:'次のうち、RPAが最も適しているのはどれか。',
+  o:['毎月1日に決まったシステムから決まった形式のCSVを落として指定フォルダに置く',
+     '顧客から届いた自由記述のアンケートを内容ごとに分類する',
+     '取引先メールを読んで緊急度を判断し担当者に振り分ける',
+     '会議の音声から議事録を作成して要点を要約する'],
+  a:0,e:'判定軸は<b>「手順を全部書き下せるか」</b>。CSVダウンロードは手順が確定していて入力も構造化データ＝RPAが最適（安い・速い・確実）。他の3つは判断が必要か非構造化データが入力なのでAIエージェント領域です。'},
+
+ {q:'生成AIの性質として正しい説明はどれか。',
+  o:['次に来る言葉を確率で選び続ける仕組みであり、正確さは保証されない',
+     '社内データベースを検索して正解を取り出す仕組みである',
+     '学習済みのルールに従って厳密に計算する仕組みである',
+     '常に最新の情報を参照して回答する仕組みである'],
+  a:0,e:'ここが全ての出発点。検索ではなく<b>確率的な生成</b>だからこそ、①ハルシネーションが起きる ②社内情報は知らない → だからRAG（Section 14）が要る ③厳密な計算は苦手、という性質が全部導かれます。'},
+
+ {q:'「毎朝8時に前日の売上データを集計してレポートを作る」業務に適した起動タイプはどれか。',
+  o:['スケジュール起動','イベント起動','ユーザー起動','起動タイプの概念は適用されない'],
+  a:0,e:'「毎朝8時」＝時刻が決まっている定期業務なので<b>スケジュール起動</b>。イベント起動は「メール受信」「閾値超え」など発生タイミングが不定な事象がきっかけ、ユーザー起動は人が都度頼む場合です。'},
+
+ {q:'「有人確認」を業務設計に組み込む判断基準として最も適切なのはどれか。',
+  o:['業務のリスクが高いほど有人確認を挟む','AIの精度が低いうちだけ挟み、精度が上がったら必ず外す',
+     'コストがかかるので原則として挟まない','完全自律が理想なので最初から挟まない設計にする'],
+  a:0,e:'この試験の一貫した思想は<b>「自律性は高ければ偉いのではなく、リスクに応じて選ぶもの」</b>。発注・支払い・対外送信など失敗の代償が大きい処理は、精度が上がっても有人確認を残すのが設計として正しい。Section 7・19で再登場します。'},
+
+ {q:'RPAが実務で破綻する最大の原因として、シラバスが挙げている論点はどれか。',
+  o:['例外パターンが増え続けてメンテナンスが回らなくなる','導入コストが高すぎる',
+     '処理速度が遅い','構造化データを扱えない'],
+  a:0,e:'キーワードは<b>例外処理</b>。RPAは決められた手順しか実行できないため、想定外が来ると止まる。例外に対応するたびにルールを追加し、やがて誰も保守できなくなる。AIエージェントはここを吸収できるが、引き換えに<b>正確性の保証を失う</b>——このトレードオフが出題の芯です。'},
+
+ {q:'モデルルーティングを導入する主な狙いはどれか。',
+  o:['タスクの難易度に応じてモデルを使い分け、コストと品質のバランスを取る',
+     '複数のAIに同じ質問をして多数決を取り、精度を上げる',
+     '社内データをAIに学習させて専用モデルを作る',
+     'AIエージェント同士を接続して連携させる'],
+  a:0,e:'簡単な分類に高価な大型モデルを使わず軽いモデルへ、難しい判断だけ高性能モデルへ。<b>ROI設計に直結するコスト管理の話</b>だからストラテジストの守備範囲です。なお「AIエージェント同士・外部ツールとの接続」はMCP（Section 5・次回）の話。'}
+];
+
+const L1_CASE=[
+ {limit:180,
+  q:'この業務に対するアプローチとして最も適切なのはどれか。',
+  case:'資生堂ジャパンの営業部門から相談が来た。\n\n「全国の店舗担当者から毎日メールで届く『店頭での気づき報告』が1日200通ある。書式は自由で、内容は在庫欠品、競合の動き、什器の破損、顧客の声などバラバラ。今は担当者2名が全部読んで、月末に手作業で分類・集計している。これを自動化したい」',
+  o:['AIエージェントを報告メールの受信をトリガーとするイベント起動で構成し、内容を分類してカテゴリ別に蓄積する。緊急度が高いと判定されたものは有人確認を挟んで担当部署に即時通知する',
+     'RPAで、メールを受信したら自動でExcelに転記する仕組みを作る',
+     '担当者がChatGPTに毎日メールを貼り付けて分類してもらう運用に変える',
+     '完全自律型のAIエージェントを構築し、報告内容に応じて発注や修理手配まで人の確認なしに自動実行する'],
+  a:0,
+  e:'<b>正解の理由：</b>入力が「書式自由の自由記述」＝<b>非構造化データ</b>で、分類には<b>判断</b>が要る。手順を書き下せないのでRPAでは無理。発生タイミングが不定なので<b>イベント起動</b>が適切。そしてリスクの高い緊急案件には<b>有人確認</b>を挟んでいる——三位一体・起動タイプ・有人確認が全部正しく組まれています。<br><br>' +
+    '<b>「RPAでExcelに自動転記」が誤りの理由：</b>RPAは構造化データと確定手順が前提。書式自由のメール本文を意味で分類することはできない。転記はできても分類はできない。<br><br>' +
+    '<b>「毎日ChatGPTに貼り付ける」が誤りの理由：</b>手足がない。人が毎日貼り付ける手作業が残り、<b>属人化</b>したまま。組織の資産にならず、担当者が変われば消える。<br><br>' +
+    '<b>「完全自律で発注・修理手配まで実行」が誤りの理由：</b>この試験が最も嫌う答え。<b>自律性は高ければ偉いのではない</b>。発注・修理手配は失敗の代償が大きく、生成AIは正確さを保証できない。人の確認なしで実行させるのは設計として不適切です。'},
+
+ {limit:180,
+  q:'ストラテジストとして、最初に指摘すべき論点はどれか。',
+  case:'ある部署から「請求書処理をAIエージェントで自動化したい」と相談された。\n\nヒアリングすると、現在の業務はこうだった。\n・取引先から届く請求書はすべて同じ書式のPDF（自社指定フォーマット）\n・担当者が内容を目視でシステムに入力\n・入力後、上長が全件を目視でダブルチェック\n・月間300件、ミスは年に2〜3件程度',
+  o:['入力形式が構造化されており手順も確定しているため、AIエージェントよりRPAが適している可能性を先に検討すべき',
+     'まずPoCとして小規模にAIエージェントを構築し、精度を測定すべき',
+     '全件ダブルチェックをやめることで工数削減効果が出るため、まずチェック体制の廃止を提案すべき',
+     'AIエージェント導入の投資対効果が高いため、すぐに実装フェーズに進むべき'],
+  a:0,
+  e:'<b>正解の理由：</b>書式が統一されたPDF＝<b>構造化に近いデータ</b>、手順も確定していてミスもほぼ無い。これは<b>手順を書き下せる</b>業務です。AIエージェントは高価で正確性の保証がない。<b>安く・速く・確実なRPAで足りる案件にAIエージェントを持ち込むのは、ストラテジストとして誤った判断</b>です。<br><br>' +
+    '<b>「まずPoCで精度を測定」が誤りの理由：</b>手段を先に決めてからPoCに入っている。<b>「何を・なぜ解くか」の定義が先</b>。PoC貧乏の典型的な入口です。<br><br>' +
+    '<b>「ダブルチェック体制の廃止を提案」が誤りの理由：</b>効果は出るかもしれないが、これはAI導入の話ではなく統制の話。しかも<b>リスク評価なしにチェックを外す提案</b>は説明責任の観点で不適切。<br><br>' +
+    '<b>「すぐ実装フェーズへ」が誤りの理由：</b>ROIを算定せずに「効果が高い」と断定している。ROI設計はストラテジストのコアスキルであり、ここを飛ばすのは職責の放棄です。'}
+];
+
+const LESSONS=[
+ {n:1,t:'生成AIとAIエージェントの正体',sec:'Sec 1-4',ready:true,body:L1_BODY,quiz:L1_QUIZ,cases:L1_CASE},
+ {n:2,t:'5Dモデル骨格 ＋ MCP・価値・リスク・トレンド',sec:'Sec 5-8 / 28-32',ready:false},
+ {n:3,t:'業務分解の道具箱（ECRS・IPO・SIPOC・HTA）',sec:'Sec 9-11',ready:false},
+ {n:4,t:'ナレッジとデータ',sec:'Sec 12-13,16',ready:false},
+ {n:5,t:'RAG・ガバナンス・法務',sec:'Sec 14-15',ready:false},
+ {n:6,t:'PoCと成功の3層定義',sec:'Sec 17-18',ready:false},
+ {n:7,t:'自動化レベルとワークフロー設計',sec:'Sec 19-22',ready:false},
+ {n:8,t:'組織文化と推進体制',sec:'Sec 23-24',ready:false},
+ {n:9,t:'評価制度とチェンジマネジメント',sec:'Sec 25-27',ready:false},
+ {n:10,t:'5Dモデル深掘り 前半',sec:'Sec 28-30',ready:false},
+ {n:11,t:'5Dモデル深掘り 後半',sec:'Sec 31-32',ready:false},
+ {n:12,t:'総復習 → 模試①（75分）',sec:'全範囲',ready:false},
+ {n:13,t:'弱点補強 → 模試②',sec:'弱点中心',ready:false},
+ {n:14,t:'最終確認・模試③・直前チェック',sec:'全範囲',ready:false}
+];
+
+/* ============ state ============ */
+const KEY='aicx-lab-v1';
+let ST=JSON.parse(localStorage.getItem(KEY)||'{}');
+const save=()=>localStorage.setItem(KEY,JSON.stringify(ST));
+
+/* ============ countdown ============ */
+function renderCounts(){
+  const now=new Date(); now.setHours(0,0,0,0);
+  document.getElementById('counts').innerHTML=DATES.map(x=>{
+    const d=new Date(x.d+'T00:00:00');
+    const days=Math.round((d-now)/86400000);
+    const txt=days>0?`あと<b>${days}</b>日`:(days===0?'<b>今日</b>':'終了');
+    return `<div class="chip ${x.hot&&days>=0?'hot':''}">${x.k} ${txt}</div>`;
+  }).join('');
+}
+
+/* ============ home ============ */
+function renderHome(){
+  document.getElementById('lessonList').innerHTML=LESSONS.map(l=>{
+    const r=ST['l'+l.n];
+    const pill=r?`<span class="pill done">✓ ${r.score}/${r.total}</span>`
+              :(l.ready?'<span class="pill now">未受講</span>':'<span class="pill">準備中</span>');
+    return `<button class="btn" ${l.ready?'':'disabled'} data-l="${l.n}">
+      <div class="row"><div class="grow">
+        <div style="font-size:11px;color:var(--muted)">第${l.n}回 ・ ${l.sec}</div>
+        <div style="font-size:14.5px;font-weight:700;margin-top:2px">${l.t}</div>
+      </div>${pill}</div></button>`;
+  }).join('');
+  document.querySelectorAll('[data-l]').forEach(b=>b.onclick=()=>openLesson(+b.dataset.l));
+
+  const done=LESSONS.filter(l=>ST['l'+l.n]).length;
+  document.getElementById('progBar').style.width=(done/LESSONS.length*100)+'%';
+  document.getElementById('progText').textContent=`完了 ${done} / ${LESSONS.length} 回`;
+
+  document.getElementById('syllabus').innerHTML=SYL.map(ch=>`
+    <div class="card body">
+      <h3 style="margin-top:0">${ch.c}</h3>
+      ${ch.s.map(s=>`<div style="margin:12px 0">
+        <div style="font-size:13.5px;font-weight:700">${s[0]}. ${s[1]}</div>
+        <div style="font-size:12.5px;color:var(--muted);margin-top:2px">${s[2]}</div>
+        <div class="kw">${s[3].split(' / ').map(k=>`<span>${k}</span>`).join('')}</div>
+      </div>`).join('')}
+    </div>`).join('');
+}
+
+/* ============ lesson ============ */
+let cur=null, answered={}, timers={};
+
+function shuffleQ(q){
+  const idx=q.o.map((_,i)=>i);
+  for(let i=idx.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[idx[i],idx[j]]=[idx[j],idx[i]];}
+  q._o=idx.map(i=>q.o[i]); q._a=idx.indexOf(q.a);
+}
+
+function openLesson(n){
+  cur=LESSONS.find(l=>l.n===n); answered={};
+  cur.quiz.forEach(shuffleQ); cur.cases.forEach(shuffleQ);
+  const tot=cur.quiz.length+cur.cases.length;
+  document.getElementById('lessonBody').innerHTML=`
+    <div class="card">
+      <div style="font-size:11px;color:var(--muted)">第${cur.n}回 ・ ${cur.sec}</div>
+      <h1 style="font-size:18px;margin-top:3px">${cur.t}</h1>
+    </div>
+    <div class="card body">${cur.body}</div>
+
+    <div class="sec-title"><h2>理解チェック</h2><small>${cur.quiz.length}問・時間制限なし</small></div>
+    <div class="card" id="quizBox"></div>
+
+    <div class="sec-title"><h2>ケース演習</h2><small>${cur.cases.length}問・各3分</small></div>
+    <div class="card"><p class="lead" style="margin:0">本番はケース読解型で、<b style="color:var(--warn)">時間切れが最大の敵</b>。必ずタイマーを開始してから読むこと。</p></div>
+    <div id="caseBox"></div>
+
+    <div class="card score" id="scoreBox" style="display:none"></div>`;
+
+  const qb=document.getElementById('quizBox');
+  qb.innerHTML=cur.quiz.map((q,i)=>qHTML(q,i,'q')).join('<hr style="border:none;border-top:1px solid var(--line);margin:20px 0">');
+  const cb=document.getElementById('caseBox');
+  cb.innerHTML=cur.cases.map((q,i)=>`<div class="card">
+      <div class="timer" data-timer="c${i}">
+        <div class="t" id="t-c${i}">3:00</div>
+        <button class="tbtn" data-start="c${i}">スタート</button>
+        <small style="margin-left:auto">ケース${i+1}</small>
+      </div>
+      ${qHTML(q,i,'c')}
+    </div>`).join('');
+
+  bind();
+  show('lesson'); window.scrollTo(0,0);
+}
+
+function qHTML(q,i,pfx){
+  const id=pfx+i;
+  return `<div class="q" data-q="${id}">
+    <div class="qhead"><span class="qno">${pfx==='q'?'Q'+(i+1):'CASE '+(i+1)}</span>
+      <div class="qtext">${q.q}</div></div>
+    ${q.case?`<div class="case">${q.case}</div>`:''}
+    ${q._o.map((o,j)=>`<div class="opt" data-a="${id}" data-i="${j}">
+        <div class="mk">${'ABCD'[j]}</div><div>${o}</div></div>`).join('')}
+    <div class="exp" id="e-${id}"><b>解説</b><br>${q.e}</div>
+  </div>`;
+}
+
+function bind(){
+  document.querySelectorAll('.opt').forEach(el=>{
+    el.onclick=()=>{
+      const id=el.dataset.a; if(answered[id]!==undefined) return;
+      const idx=+el.dataset.i;
+      const q=id[0]==='q'?cur.quiz[+id.slice(1)]:cur.cases[+id.slice(1)];
+      answered[id]=(idx===q._a);
+      document.querySelectorAll(`[data-a="${id}"]`).forEach(o=>{
+        o.classList.add('locked');
+        const oi=+o.dataset.i;
+        if(oi===q._a){o.classList.add('correct');o.querySelector('.mk').textContent='✓';}
+        else if(oi===idx){o.classList.add('wrong');o.querySelector('.mk').textContent='✕';}
+      });
+      document.getElementById('e-'+id).classList.add('show');
+      if(id[0]==='c') stopTimer(id);
+      checkDone();
+    };
+  });
+  document.querySelectorAll('[data-start]').forEach(b=>{
+    b.onclick=()=>startTimer(b.dataset.start,b);
+  });
+}
+
+function startTimer(id,btn){
+  if(timers[id]) return;
+  const q=cur.cases[+id.slice(1)];
+  let left=q.limit;
+  const el=document.getElementById('t-'+id);
+  btn.textContent='計測中';btn.disabled=true;
+  const tick=()=>{
+    const m=Math.floor(Math.abs(left)/60),s=Math.abs(left)%60;
+    el.textContent=(left<0?'-':'')+m+':'+String(s).padStart(2,'0');
+    el.classList.toggle('over',left<=0);
+    left--;
+  };
+  tick(); timers[id]=setInterval(tick,1000);
+}
+function stopTimer(id){ if(timers[id]){clearInterval(timers[id]);timers[id]=null;} }
+
+function checkDone(){
+  const tot=cur.quiz.length+cur.cases.length;
+  const keys=Object.keys(answered);
+  if(keys.length<tot) return;
+  const score=keys.filter(k=>answered[k]).length;
+  const good=score/tot>=0.8;
+  const box=document.getElementById('scoreBox');
+  box.style.display='block';
+  box.innerHTML=`<div class="n ${good?'good':'bad'}">${score} / ${tot}</div>
+    <p style="font-size:14px;margin:6px 0 0">${good?'合格ライン（8割）クリア。次の回へ進んでいい。':'8割に届いていない。間違えた問題の解説をもう一度読んでから次へ。'}</p>`;
+  ST['l'+cur.n]={score,total:tot,at:new Date().toISOString().slice(0,10)};
+  save();
+  box.scrollIntoView({behavior:'smooth',block:'center'});
+}
+
+/* ============ nav ============ */
+function show(id){
+  document.querySelectorAll('.view').forEach(v=>v.classList.toggle('on',v.id===id));
+}
+document.getElementById('back1').onclick=()=>{
+  Object.keys(timers).forEach(stopTimer);
+  renderHome(); show('home'); window.scrollTo(0,0);
+};
+document.getElementById('resetBtn').onclick=()=>{
+  if(!confirm('学習記録をすべて消去します。よろしいですか？')) return;
+  ST={};save();renderHome();
+};
+
+renderCounts(); renderHome();
+</script>
+</body>
+</html>
