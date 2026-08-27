@@ -1,6 +1,6 @@
 # BUILD_PLAN.md — 毎日1セッション実装の進行台帳
 
-最終更新: 2026-08-28 by Claude (Fable 5)
+最終更新: 2026-08-28 by Claude (Opus 5)
 
 **この文書の役割**: どのセッション（Opus 想定）が、いつ開かれても、ここを読めば「今日やる1つの Build」を迷いなく実装して終われるようにする進行管理台帳。
 **仕様の正は [DESIGN.md](DESIGN.md)**（何を作るか）。本書は「どう進めるか」と「今どこまで進んだか」だけを持つ。矛盾したら DESIGN.md が勝つ。設計を変えたくなったら DESIGN.md を先に直してから実装する。
@@ -48,7 +48,7 @@
 
 | # | Build | 内容（詳細は DESIGN.md 参照先） | 目安日 | 状態 | 完了日 | commit | メモ |
 |---|---|---|---|---|---|---|---|
-| 1 | **A** | 基盤改修: QB一元化+スキーマv2+SRS+今日の復習+ストリーク+想起クイズ+結果コピー+エクスポート/インポート+第1回10問のQB移行 → §1 全部 | 8/29 | 未 | | | 最大の回。教材は書かない。機能だけ |
+| 1 | **A** | 基盤改修: QB一元化+スキーマv2+SRS+今日の復習+ストリーク+想起クイズ+結果コピー+エクスポート/インポート+第1回10問のQB移行 → §1 全部 | 8/29 | 済 | 2026-08-28 | `33d8939` | 弱点マップは C1 に据置（設計どおり）。記録リセットはヘッダーから設定カードへ移動 |
 | 2 | **B2** | 第2回: 5D骨格+Sec5-8（教材+lesson10問+mock12問+用語4語） → §4「第2回」+§3.3 | 8/30 | 未 | | | |
 | 3 | **B3** | 第3回: Sec9-11 業務分解の道具箱 → §4「第3回」 | 8/31 | 未 | | | ECRS順序・4手法使い分けが核 |
 | 4 | **B4** | 第4回: Sec12-13,16 ナレッジとデータ → §4「第4回」 | 9/1 | 未 | | | |
@@ -88,8 +88,18 @@
 | 回答判定・採点 | `function bind` / `function checkDone` |
 | ケースタイマー | `function startTimer` |
 | ホーム描画 | `function renderHome` |
+| 問題バンク（全設問の正） | `const QB=` / `const QBI=` |
+| SRS（Leitner 5箱） | `function srsAnswer` / `const BOX_IV=` |
+| 今日の復習キュー | `function dueIds` / `function renderReviewCard` |
+| 復習モード画面 | `function openReview` / `function renderReviewQ` / `const REVIEW=` |
+| ストリーク | `function streakN` / `ST.daily` |
+| 想起クイズ（前回の復習） | `function recallIds` |
+| セクション別成績・弱点 | `function secStats` / `function weakSecs` |
+| 結果コピー | `function resultText` / `function toClipboard` |
+| エクスポート／インポート | `const b64e=` / `impBtn` / `expBtn` |
+| localStorage v2 と v1 移行 | `function loadST` / `function emptyST` |
 
-Build A 完了後、この地図に QB/SRS/復習キューのアンカーを**追記すること**（例: `const QB=` / `function srsUpdate` / `function reviewQueue`）。
+（Build A で QB/SRS/復習キューのアンカーを追記済み。以後の Build でも新しい関数を足したらここに追記すること）
 
 ---
 
