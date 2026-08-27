@@ -46,6 +46,8 @@ header{position:sticky;top:0;z-index:50;backdrop-filter:blur(14px);
 .chip b{color:var(--text);font-size:12px}
 .chip.hot{border-color:rgba(255,180,84,.5);color:#ffd7a0}
 .chip.hot b{color:var(--warn)}
+.chip.fire{border-color:rgba(255,180,84,.5);color:#ffd7a0}
+.chip.fire b{color:var(--warn)}
 
 /* generic */
 .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);
@@ -134,6 +136,11 @@ header{position:sticky;top:0;z-index:50;backdrop-filter:blur(14px);
   background:rgba(255,255,255,.05);border:1px solid var(--line)}
 .exp.show{display:block}
 .exp b{color:var(--accent2)}
+.src{margin-top:10px;padding-top:8px;border-top:1px solid var(--line);
+  font-size:11px;color:var(--muted)}
+.setrow{display:flex;gap:8px;flex-wrap:wrap}
+.setrow .tbtn{flex:1 1 auto}
+.tbtn.ng{background:rgba(255,107,107,.14);border-color:rgba(255,107,107,.45)}
 
 /* timer */
 .timer{position:sticky;top:64px;z-index:40;display:flex;gap:8px;align-items:center;
@@ -161,7 +168,6 @@ footer{text-align:center;font-size:11px;color:var(--muted);padding:30px 0 10px}
   <div class="wrap">
     <div class="hd">
       <div class="brand">🧠 AICX <span>Lab</span></div>
-      <button class="tbtn" id="resetBtn" style="font-size:11px;padding:5px 10px">記録リセット</button>
     </div>
     <div class="counts" id="counts"></div>
   </div>
@@ -179,6 +185,8 @@ footer{text-align:center;font-size:11px;color:var(--muted);padding:30px 0 10px}
     <div class="bar"><i id="progBar"></i></div>
     <p class="lead" id="progText" style="margin-top:8px"></p>
   </div>
+
+  <div id="reviewCard"></div>
 
   <div class="sec-title"><h2>カリキュラム</h2><small>全14回</small></div>
   <div id="lessonList"></div>
@@ -200,6 +208,22 @@ footer{text-align:center;font-size:11px;color:var(--muted);padding:30px 0 10px}
   <div class="sec-title"><h2>シラバス全32セクション</h2><small>到達目標</small></div>
   <div id="syllabus"></div>
 
+  <div class="sec-title"><h2>設定</h2><small>データ管理</small></div>
+  <div class="card">
+    <p class="lead" style="margin:0 0 12px">学習記録はこの端末のブラウザにだけ保存されます。端末を移すときは「書き出し」でコピーし、移行先で「読み込み」に貼り付けてください。</p>
+    <div class="setrow">
+      <button class="tbtn" id="expBtn">データ書き出し</button>
+      <button class="tbtn" id="impBtn">データ読み込み</button>
+      <button class="tbtn ng" id="resetBtn">記録リセット</button>
+    </div>
+  </div>
+
+</section>
+
+<!-- ========== REVIEW ========== -->
+<section id="review" class="view">
+  <button class="back" id="back2">← ホームに戻る</button>
+  <div id="reviewBody"></div>
 </section>
 
 <!-- ========== LESSON ========== -->
@@ -326,55 +350,62 @@ const L1_BODY = `
 <b>やってはいけない典型：</b>業務プロセスを見直さずAIエージェントを載せる。<b>非効率を高速に実行するだけ</b>になる（Section 10のBPRに直結）。</div>
 `;
 
-const L1_QUIZ=[
- {q:'AIエージェントの「三位一体」を構成する3要素はどれか。',
+/* ============ 問題バンク（全設問の単一ソース） ============ */
+const QB=[
+ {id:'s02-01',sec:2,ch:1,type:1,pool:'both',
+  q:'AIエージェントの「三位一体」を構成する3要素はどれか。',
   o:['頭脳・記憶・手足','入力・処理・出力','設計・実装・運用','データ・モデル・API'],
   a:0,e:'シラバスSection 2の明示キーワード。<b>頭脳（LLM＝判断）／記憶（履歴・社内文書＝材料）／手足（ツール連携＝実行）</b>。「入力・処理・出力」はIPO（Section 11）で別概念なので混同しないこと。'},
 
- {q:'「ChatGPTに質問して回答をもらう」だけの使い方で、決定的に欠けている要素はどれか。',
+ {id:'s02-02',sec:2,ch:1,type:1,pool:'both',
+  q:'「ChatGPTに質問して回答をもらう」だけの使い方で、決定的に欠けている要素はどれか。',
   o:['手足（ツール連携）','頭脳（LLM）','記憶（会話履歴）','どれも欠けていない'],
   a:0,e:'頭脳はある。記憶も会話の範囲では持つ。<b>欠けているのは手足</b>＝実際に業務システムを動かす能力。だから「言うだけで何もしない」状態にとどまる。ここがチャットボットとエージェントの境目です。'},
 
- {q:'次のうち、RPAが最も適しているのはどれか。',
+ {id:'s04-01',sec:4,ch:1,type:2,pool:'both',
+  q:'次のうち、RPAが最も適しているのはどれか。',
   o:['毎月1日に決まったシステムから決まった形式のCSVを落として指定フォルダに置く',
      '顧客から届いた自由記述のアンケートを内容ごとに分類する',
      '取引先メールを読んで緊急度を判断し担当者に振り分ける',
      '会議の音声から議事録を作成して要点を要約する'],
   a:0,e:'判定軸は<b>「手順を全部書き下せるか」</b>。CSVダウンロードは手順が確定していて入力も構造化データ＝RPAが最適（安い・速い・確実）。他の3つは判断が必要か非構造化データが入力なのでAIエージェント領域です。'},
 
- {q:'生成AIの性質として正しい説明はどれか。',
+ {id:'s01-01',sec:1,ch:1,type:1,pool:'both',
+  q:'生成AIの性質として正しい説明はどれか。',
   o:['次に来る言葉を確率で選び続ける仕組みであり、正確さは保証されない',
      '社内データベースを検索して正解を取り出す仕組みである',
      '学習済みのルールに従って厳密に計算する仕組みである',
      '常に最新の情報を参照して回答する仕組みである'],
   a:0,e:'ここが全ての出発点。検索ではなく<b>確率的な生成</b>だからこそ、①ハルシネーションが起きる ②社内情報は知らない → だからRAG（Section 14）が要る ③厳密な計算は苦手、という性質が全部導かれます。'},
 
- {q:'「毎朝8時に前日の売上データを集計してレポートを作る」業務に適した起動タイプはどれか。',
+ {id:'s03-01',sec:3,ch:1,type:2,pool:'both',
+  q:'「毎朝8時に前日の売上データを集計してレポートを作る」業務に適した起動タイプはどれか。',
   o:['スケジュール起動','イベント起動','ユーザー起動','起動タイプの概念は適用されない'],
   a:0,e:'「毎朝8時」＝時刻が決まっている定期業務なので<b>スケジュール起動</b>。イベント起動は「メール受信」「閾値超え」など発生タイミングが不定な事象がきっかけ、ユーザー起動は人が都度頼む場合です。'},
 
- {q:'「有人確認」を業務設計に組み込む判断基準として最も適切なのはどれか。',
+ {id:'s03-02',sec:3,ch:1,type:2,pool:'both',
+  q:'「有人確認」を業務設計に組み込む判断基準として最も適切なのはどれか。',
   o:['業務のリスクが高いほど有人確認を挟む','AIの精度が低いうちだけ挟み、精度が上がったら必ず外す',
      'コストがかかるので原則として挟まない','完全自律が理想なので最初から挟まない設計にする'],
   a:0,e:'この試験の一貫した思想は<b>「自律性は高ければ偉いのではなく、リスクに応じて選ぶもの」</b>。発注・支払い・対外送信など失敗の代償が大きい処理は、精度が上がっても有人確認を残すのが設計として正しい。Section 7・19で再登場します。'},
 
- {q:'RPAが実務で破綻する最大の原因として、シラバスが挙げている論点はどれか。',
+ {id:'s04-02',sec:4,ch:1,type:1,pool:'both',
+  q:'RPAが実務で破綻する最大の原因として、シラバスが挙げている論点はどれか。',
   o:['例外パターンが増え続けてメンテナンスが回らなくなる','導入コストが高すぎる',
      '処理速度が遅い','構造化データを扱えない'],
   a:0,e:'キーワードは<b>例外処理</b>。RPAは決められた手順しか実行できないため、想定外が来ると止まる。例外に対応するたびにルールを追加し、やがて誰も保守できなくなる。AIエージェントはここを吸収できるが、引き換えに<b>正確性の保証を失う</b>——このトレードオフが出題の芯です。'},
 
- {q:'モデルルーティングを導入する主な狙いはどれか。',
+ {id:'s01-02',sec:1,ch:1,type:1,pool:'both',
+  q:'モデルルーティングを導入する主な狙いはどれか。',
   o:['タスクの難易度に応じてモデルを使い分け、コストと品質のバランスを取る',
      '複数のAIに同じ質問をして多数決を取り、精度を上げる',
      '社内データをAIに学習させて専用モデルを作る',
      'AIエージェント同士を接続して連携させる'],
   a:0,e:'簡単な分類に高価な大型モデルを使わず軽いモデルへ、難しい判断だけ高性能モデルへ。<b>ROI設計に直結するコスト管理の話</b>だからストラテジストの守備範囲です。なお「AIエージェント同士・外部ツールとの接続」はMCP（Section 5・次回）の話。'}
-];
-
-const L1_CASE=[
- {limit:180,
+,
+ {id:'c01-01',sec:4,ch:1,type:2,pool:'both',limit:180,
   q:'この業務に対するアプローチとして最も適切なのはどれか。',
-  case:'資生堂ジャパンの営業部門から相談が来た。\n\n「全国の店舗担当者から毎日メールで届く『店頭での気づき報告』が1日200通ある。書式は自由で、内容は在庫欠品、競合の動き、什器の破損、顧客の声などバラバラ。今は担当者2名が全部読んで、月末に手作業で分類・集計している。これを自動化したい」',
+  cs:'資生堂ジャパンの営業部門から相談が来た。\n\n「全国の店舗担当者から毎日メールで届く『店頭での気づき報告』が1日200通ある。書式は自由で、内容は在庫欠品、競合の動き、什器の破損、顧客の声などバラバラ。今は担当者2名が全部読んで、月末に手作業で分類・集計している。これを自動化したい」',
   o:['AIエージェントを報告メールの受信をトリガーとするイベント起動で構成し、内容を分類してカテゴリ別に蓄積する。緊急度が高いと判定されたものは有人確認を挟んで担当部署に即時通知する',
      'RPAで、メールを受信したら自動でExcelに転記する仕組みを作る',
      '担当者がChatGPTに毎日メールを貼り付けて分類してもらう運用に変える',
@@ -385,9 +416,9 @@ const L1_CASE=[
     '<b>「毎日ChatGPTに貼り付ける」が誤りの理由：</b>手足がない。人が毎日貼り付ける手作業が残り、<b>属人化</b>したまま。組織の資産にならず、担当者が変われば消える。<br><br>' +
     '<b>「完全自律で発注・修理手配まで実行」が誤りの理由：</b>この試験が最も嫌う答え。<b>自律性は高ければ偉いのではない</b>。発注・修理手配は失敗の代償が大きく、生成AIは正確さを保証できない。人の確認なしで実行させるのは設計として不適切です。'},
 
- {limit:180,
+ {id:'c01-02',sec:4,ch:1,type:3,pool:'both',limit:180,
   q:'ストラテジストとして、最初に指摘すべき論点はどれか。',
-  case:'ある部署から「請求書処理をAIエージェントで自動化したい」と相談された。\n\nヒアリングすると、現在の業務はこうだった。\n・取引先から届く請求書はすべて同じ書式のPDF（自社指定フォーマット）\n・担当者が内容を目視でシステムに入力\n・入力後、上長が全件を目視でダブルチェック\n・月間300件、ミスは年に2〜3件程度',
+  cs:'ある部署から「請求書処理をAIエージェントで自動化したい」と相談された。\n\nヒアリングすると、現在の業務はこうだった。\n・取引先から届く請求書はすべて同じ書式のPDF（自社指定フォーマット）\n・担当者が内容を目視でシステムに入力\n・入力後、上長が全件を目視でダブルチェック\n・月間300件、ミスは年に2〜3件程度',
   o:['入力形式が構造化されており手順も確定しているため、AIエージェントよりRPAが適している可能性を先に検討すべき',
      'まずPoCとして小規模にAIエージェントを構築し、精度を測定すべき',
      '全件ダブルチェックをやめることで工数削減効果が出るため、まずチェック体制の廃止を提案すべき',
@@ -400,7 +431,8 @@ const L1_CASE=[
 ];
 
 const LESSONS=[
- {n:1,t:'生成AIとAIエージェントの正体',sec:'Sec 1-4',ready:true,body:L1_BODY,quiz:L1_QUIZ,cases:L1_CASE},
+ {n:1,t:'生成AIとAIエージェントの正体',sec:'Sec 1-4',ready:true,body:L1_BODY,
+  qids:['s02-01','s02-02','s04-01','s01-01','s03-01','s03-02','s04-02','s01-02'],caseIds:['c01-01','c01-02']},
  {n:2,t:'5Dモデル骨格 ＋ MCP・価値・リスク・トレンド',sec:'Sec 5-8 / 28-32',ready:false},
  {n:3,t:'業務分解の道具箱（ECRS・IPO・SIPOC・HTA）',sec:'Sec 9-11',ready:false},
  {n:4,t:'ナレッジとデータ',sec:'Sec 12-13,16',ready:false},
@@ -561,26 +593,113 @@ document.addEventListener('click',e=>{
   if(el)openTerm(el.dataset.term);
 });
 
-/* ============ state ============ */
-const KEY='aicx-lab-v1';
-let ST=JSON.parse(localStorage.getItem(KEY)||'{}');
+/* ============ state（スキーマ v2） ============ */
+const KEY='aicx-lab-v2', KEY_V1='aicx-lab-v1';
+const QBI={}; QB.forEach(q=>QBI[q.id]=q);
+const SECT={}; SYL.forEach(c=>c.s.forEach(x=>SECT[x[0]]=x[1]));
+const QLESSON={}; LESSONS.forEach(l=>(l.qids||[]).concat(l.caseIds||[]).forEach(id=>QLESSON[id]=l.n));
+
+function emptyST(){ return {v:2,srs:{},lessons:{},mocks:{},daily:{},streak:{n:0,last:''}}; }
+function loadST(){
+  let s=null;
+  try{ s=JSON.parse(localStorage.getItem(KEY)||'null'); }catch(e){}
+  if(s&&s.v===2) return s;
+  s=emptyST();
+  let v1=null;
+  try{ v1=JSON.parse(localStorage.getItem(KEY_V1)||'null'); }catch(e){}
+  if(v1){
+    Object.keys(v1).forEach(k=>{ const m=/^l(\d+)$/.exec(k); if(m&&v1[k]&&v1[k].total) s.lessons[m[1]]=v1[k]; });
+    localStorage.removeItem(KEY_V1);
+  }
+  return s;
+}
+let ST=loadST();
 const save=()=>localStorage.setItem(KEY,JSON.stringify(ST));
+save();
+
+/* ============ 日付（ローカル日基準） ============ */
+const isoOf=d=>new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,10);
+const today=()=>isoOf(new Date());
+function addDays(ds,n){ const d=new Date(ds+'T00:00:00'); d.setDate(d.getDate()+n); return isoOf(d); }
+
+/* ============ SRS（Leitner 5箱） ============ */
+const BOX_IV={1:1,2:3,3:7,4:14,5:3650};   /* B5=卒業。日次復習には出ない */
+function srsOf(id){ return ST.srs[id]||(ST.srs[id]={b:0,due:'',r:0,w:0,last:''}); }
+function srsAnswer(id,ok,fromMock){
+  const s=srsOf(id);
+  if(ok)s.r++; else s.w++;
+  if(fromMock){ if(!ok)s.b=1; else if(!s.b)s.b=2; }   /* 模試は診断。誤答→B1、正答は箱を動かさない */
+  else s.b = ok ? (s.b?Math.min(5,s.b+1):2) : 1;
+  s.last=today(); s.due=addDays(s.last,BOX_IV[s.b]);
+  ST.daily[s.last]=(ST.daily[s.last]||0)+1;
+  save();
+}
+function streakN(){
+  let d=today(),n=0;
+  if((ST.daily[d]||0)<5) d=addDays(d,-1);   /* 今日まだ未達成なら昨日までの連続を出す */
+  while((ST.daily[d]||0)>=5){ n++; d=addDays(d,-1); }
+  ST.streak={n,last:today()};
+  return n;
+}
+function dueIds(){
+  const t=today();
+  return Object.keys(ST.srs)
+    .filter(id=>QBI[id]&&ST.srs[id].due&&ST.srs[id].due<=t)
+    .sort((a,b)=>{const A=ST.srs[a],B=ST.srs[b];return A.due<B.due?-1:A.due>B.due?1:A.b-B.b;})
+    .slice(0,20);   /* 1日20問まで。超過分は翌日へ */
+}
+function secStats(){
+  const m={};
+  Object.keys(ST.srs).forEach(id=>{
+    const q=QBI[id]; if(!q)return;
+    const e=m[q.sec]||(m[q.sec]={r:0,w:0});
+    e.r+=ST.srs[id].r; e.w+=ST.srs[id].w;
+  });
+  return m;
+}
+function weakSecs(){
+  const st=secStats();
+  return Object.keys(st).map(Number).filter(n=>st[n].r+st[n].w>=3)
+    .map(n=>({n,p:Math.round(st[n].r/(st[n].r+st[n].w)*100)}))
+    .filter(x=>x.p<80).sort((a,b)=>a.p-b.p);
+}
 
 /* ============ countdown ============ */
 function renderCounts(){
   const now=new Date(); now.setHours(0,0,0,0);
-  document.getElementById('counts').innerHTML=DATES.map(x=>{
+  const chips=DATES.map(x=>{
     const d=new Date(x.d+'T00:00:00');
     const days=Math.round((d-now)/86400000);
     const txt=days>0?`あと<b>${days}</b>日`:(days===0?'<b>今日</b>':'終了');
     return `<div class="chip ${x.hot&&days>=0?'hot':''}">${x.k} ${txt}</div>`;
   }).join('');
+  const n=streakN();
+  document.getElementById('counts').innerHTML=chips+
+    `<div class="chip ${n>0?'fire':''}">🔥 連続 <b>${n}</b> 日</div>`;
 }
 
 /* ============ home ============ */
+function renderReviewCard(){
+  const ids=dueIds(), box=document.getElementById('reviewCard');
+  if(!ids.length){
+    box.innerHTML=`<div class="card"><div class="row">
+      <div class="grow"><div style="font-size:11px;color:var(--muted)">今日の復習</div>
+      <div style="font-size:15px;font-weight:700;margin-top:2px">今日の復習はなし ✅</div></div>
+      <span class="pill done">0問</span></div></div>`;
+    return;
+  }
+  box.innerHTML=`<button class="btn" id="startReview"><div class="row">
+    <div class="grow"><div style="font-size:11px;color:var(--muted)">今日の復習</div>
+    <div style="font-size:15px;font-weight:700;margin-top:2px">${ids.length}問を復習する</div></div>
+    <span class="pill now">${ids.length}問</span></div></button>`;
+  document.getElementById('startReview').onclick=()=>openReview(dueIds());
+}
+
 function renderHome(){
+  renderReviewCard();
+
   document.getElementById('lessonList').innerHTML=LESSONS.map(l=>{
-    const r=ST['l'+l.n];
+    const r=ST.lessons[l.n];
     const pill=r?`<span class="pill done">✓ ${r.score}/${r.total}</span>`
               :(l.ready?'<span class="pill now">未受講</span>':'<span class="pill">準備中</span>');
     return `<button class="btn" ${l.ready?'':'disabled'} data-l="${l.n}">
@@ -591,9 +710,12 @@ function renderHome(){
   }).join('');
   document.querySelectorAll('[data-l]').forEach(b=>b.onclick=()=>openLesson(+b.dataset.l));
 
-  const done=LESSONS.filter(l=>ST['l'+l.n]).length;
+  const done=LESSONS.filter(l=>ST.lessons[l.n]).length;
+  const mastered=Object.keys(ST.srs).filter(id=>QBI[id]&&ST.srs[id].b>=4).length;
+  const seen=Object.keys(ST.srs).filter(id=>QBI[id]).length;
   document.getElementById('progBar').style.width=(done/LESSONS.length*100)+'%';
-  document.getElementById('progText').textContent=`完了 ${done} / ${LESSONS.length} 回`;
+  document.getElementById('progText').textContent=
+    `完了 ${done} / ${LESSONS.length} 回 ・ 習得 ${mastered} / ${seen} 問（B4以上）・ 今日の復習 ${dueIds().length} 問`;
 
   document.getElementById('syllabus').innerHTML=SYL.map(ch=>`
     <div class="card body">
@@ -607,72 +729,38 @@ function renderHome(){
   linkify(document.getElementById('syllabus'),1);
 }
 
-/* ============ lesson ============ */
-let cur=null, answered={}, timers={};
+/* ============ 出題エンジン（レッスン・想起クイズ・復習で共有） ============ */
+let cur=null, answered={}, timers={}, curQ={};
 
 function shuffleQ(q){
   const idx=q.o.map((_,i)=>i);
   for(let i=idx.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[idx[i],idx[j]]=[idx[j],idx[i]];}
   q._o=idx.map(i=>q.o[i]); q._a=idx.indexOf(q.a);
 }
+function prep(id){ const q=QBI[id]; shuffleQ(q); curQ[id]=q; return q; }
 
-function openLesson(n){
-  cur=LESSONS.find(l=>l.n===n); answered={};
-  cur.quiz.forEach(shuffleQ); cur.cases.forEach(shuffleQ);
-  const tot=cur.quiz.length+cur.cases.length;
-  document.getElementById('lessonBody').innerHTML=`
-    <div class="card">
-      <div style="font-size:11px;color:var(--muted)">第${cur.n}回 ・ ${cur.sec}</div>
-      <h1 style="font-size:18px;margin-top:3px">${cur.t}</h1>
-    </div>
-    <div class="card body">${cur.body}</div>
-
-    <div class="sec-title"><h2>理解チェック</h2><small>${cur.quiz.length}問・時間制限なし</small></div>
-    <div class="card" id="quizBox"></div>
-
-    <div class="sec-title"><h2>ケース演習</h2><small>${cur.cases.length}問・各3分</small></div>
-    <div class="card"><p class="lead" style="margin:0">本番はケース読解型で、<b style="color:var(--warn)">時間切れが最大の敵</b>。必ずタイマーを開始してから読むこと。</p></div>
-    <div id="caseBox"></div>
-
-    <div class="card score" id="scoreBox" style="display:none"></div>`;
-
-  const qb=document.getElementById('quizBox');
-  qb.innerHTML=cur.quiz.map((q,i)=>qHTML(q,i,'q')).join('<hr style="border:none;border-top:1px solid var(--line);margin:20px 0">');
-  const cb=document.getElementById('caseBox');
-  cb.innerHTML=cur.cases.map((q,i)=>`<div class="card">
-      <div class="timer" data-timer="c${i}">
-        <div class="t" id="t-c${i}">3:00</div>
-        <button class="tbtn" data-start="c${i}">スタート</button>
-        <small style="margin-left:auto">ケース${i+1}</small>
-      </div>
-      ${qHTML(q,i,'c')}
-    </div>`).join('');
-
-  bind();
-  linkify(document.querySelector('#lessonBody .body'),2);
-  document.querySelectorAll('#lessonBody .exp, #lessonBody .case').forEach(el=>linkify(el,1));
-  show('lesson'); window.scrollTo(0,0);
+function srcBadge(q){
+  const n=QLESSON[q.id];
+  return `出典: ${n?'第'+n+'回 ・ ':''}Sec${q.sec} ${SECT[q.sec]||''} ・ 型${q.type}`;
 }
-
-function qHTML(q,i,pfx){
-  const id=pfx+i;
-  return `<div class="q" data-q="${id}">
-    <div class="qhead"><span class="qno">${pfx==='q'?'Q'+(i+1):'CASE '+(i+1)}</span>
+function qHTML(q,label){
+  return `<div class="q" data-q="${q.id}">
+    <div class="qhead"><span class="qno">${label}</span>
       <div class="qtext">${q.q}</div></div>
-    ${q.case?`<div class="case">${q.case}</div>`:''}
-    ${q._o.map((o,j)=>`<div class="opt" data-a="${id}" data-i="${j}">
+    ${q.cs?`<div class="case">${q.cs}</div>`:''}
+    ${q._o.map((o,j)=>`<div class="opt" data-a="${q.id}" data-i="${j}">
         <div class="mk">${'ABCD'[j]}</div><div>${o}</div></div>`).join('')}
-    <div class="exp" id="e-${id}"><b>解説</b><br>${q.e}</div>
+    <div class="exp" id="e-${q.id}"><b>解説</b><br>${q.e}<div class="src">${srcBadge(q)}</div></div>
   </div>`;
 }
 
-function bind(){
-  document.querySelectorAll('.opt').forEach(el=>{
+function bind(root){
+  root=root||document;
+  root.querySelectorAll('.opt').forEach(el=>{
     el.onclick=()=>{
       const id=el.dataset.a; if(answered[id]!==undefined) return;
-      const idx=+el.dataset.i;
-      const q=id[0]==='q'?cur.quiz[+id.slice(1)]:cur.cases[+id.slice(1)];
-      answered[id]=(idx===q._a);
+      const q=curQ[id], idx=+el.dataset.i, ok=(idx===q._a);
+      answered[id]=ok;
       document.querySelectorAll(`[data-a="${id}"]`).forEach(o=>{
         o.classList.add('locked');
         const oi=+o.dataset.i;
@@ -680,19 +768,19 @@ function bind(){
         else if(oi===idx){o.classList.add('wrong');o.querySelector('.mk').textContent='✕';}
       });
       document.getElementById('e-'+id).classList.add('show');
-      if(id[0]==='c') stopTimer(id);
-      checkDone();
+      stopTimer(id);
+      srsAnswer(id,ok,false);
+      if(REVIEW.on) reviewAfter(ok); else checkDone();
     };
   });
-  document.querySelectorAll('[data-start]').forEach(b=>{
+  root.querySelectorAll('[data-start]').forEach(b=>{
     b.onclick=()=>startTimer(b.dataset.start,b);
   });
 }
 
 function startTimer(id,btn){
   if(timers[id]) return;
-  const q=cur.cases[+id.slice(1)];
-  let left=q.limit;
+  let left=curQ[id].limit;
   const el=document.getElementById('t-'+id);
   btn.textContent='計測中';btn.disabled=true;
   const tick=()=>{
@@ -704,33 +792,156 @@ function startTimer(id,btn){
   tick(); timers[id]=setInterval(tick,1000);
 }
 function stopTimer(id){ if(timers[id]){clearInterval(timers[id]);timers[id]=null;} }
+function stopAllTimers(){ Object.keys(timers).forEach(stopTimer); timers={}; }
+
+/* ============ lesson ============ */
+function accuracy(id){ const s=ST.srs[id]; if(!s||!(s.r+s.w)) return 0.5; return s.r/(s.r+s.w); }
+function recallIds(n){
+  const prior=[];
+  LESSONS.filter(l=>l.n<n&&l.ready).forEach(l=>(l.qids||[]).concat(l.caseIds||[]).forEach(id=>prior.push(id)));
+  const t=today();
+  const due=prior.filter(id=>ST.srs[id]&&ST.srs[id].due&&ST.srs[id].due<=t);
+  const rest=prior.filter(id=>due.indexOf(id)<0).sort((a,b)=>accuracy(a)-accuracy(b));
+  return due.concat(rest).slice(0,3);
+}
+
+function openLesson(n){
+  REVIEW.on=false;
+  cur=LESSONS.find(l=>l.n===n); answered={}; curQ={}; stopAllTimers();
+  const qs=cur.qids.map(prep), cs=cur.caseIds.map(prep), rc=recallIds(n).map(prep);
+
+  document.getElementById('lessonBody').innerHTML=`
+    <div class="card">
+      <div style="font-size:11px;color:var(--muted)">第${cur.n}回 ・ ${cur.sec}</div>
+      <h1 style="font-size:18px;margin-top:3px">${cur.t}</h1>
+    </div>
+    ${rc.length?`
+    <div class="sec-title"><h2>前回の復習</h2><small>想起クイズ${rc.length}問・スコア対象外</small></div>
+    <div class="card" id="recallBox"></div>`:''}
+
+    <div class="card body">${cur.body}</div>
+
+    <div class="sec-title"><h2>理解チェック</h2><small>${qs.length}問・時間制限なし</small></div>
+    <div class="card" id="quizBox"></div>
+
+    <div class="sec-title"><h2>ケース演習</h2><small>${cs.length}問・各3分</small></div>
+    <div class="card"><p class="lead" style="margin:0">本番はケース読解型で、<b style="color:var(--warn)">時間切れが最大の敵</b>。必ずタイマーを開始してから読むこと。</p></div>
+    <div id="caseBox"></div>
+
+    <div class="card score" id="scoreBox" style="display:none"></div>`;
+
+  const HR='<hr style="border:none;border-top:1px solid var(--line);margin:20px 0">';
+  if(rc.length) document.getElementById('recallBox').innerHTML=rc.map((q,i)=>qHTML(q,'復習'+(i+1))).join(HR);
+  document.getElementById('quizBox').innerHTML=qs.map((q,i)=>qHTML(q,'Q'+(i+1))).join(HR);
+  document.getElementById('caseBox').innerHTML=cs.map((q,i)=>`<div class="card">
+      <div class="timer" data-timer="${q.id}">
+        <div class="t" id="t-${q.id}">3:00</div>
+        <button class="tbtn" data-start="${q.id}">スタート</button>
+        <small style="margin-left:auto">ケース${i+1}</small>
+      </div>
+      ${qHTML(q,'CASE '+(i+1))}
+    </div>`).join('');
+
+  bind();
+  linkify(document.querySelector('#lessonBody .body'),2);
+  document.querySelectorAll('#lessonBody .exp, #lessonBody .case').forEach(el=>linkify(el,1));
+  show('lesson'); window.scrollTo(0,0);
+}
 
 function checkDone(){
-  const tot=cur.quiz.length+cur.cases.length;
-  const keys=Object.keys(answered);
-  if(keys.length<tot) return;
-  const score=keys.filter(k=>answered[k]).length;
+  const ids=cur.qids.concat(cur.caseIds);
+  if(ids.some(id=>answered[id]===undefined)) return;
+  const score=ids.filter(id=>answered[id]).length, tot=ids.length;
   const good=score/tot>=0.8;
   const box=document.getElementById('scoreBox');
   box.style.display='block';
   box.innerHTML=`<div class="n ${good?'good':'bad'}">${score} / ${tot}</div>
-    <p style="font-size:14px;margin:6px 0 0">${good?'合格ライン（8割）クリア。次の回へ進んでいい。':'8割に届いていない。間違えた問題の解説をもう一度読んでから次へ。'}</p>`;
-  ST['l'+cur.n]={score,total:tot,at:new Date().toISOString().slice(0,10)};
+    <p style="font-size:14px;margin:6px 0 12px">${good?'合格ライン（8割）クリア。次の回へ進んでいい。':'8割に届いていない。間違えた問題の解説をもう一度読んでから次へ。'}</p>
+    <button class="tbtn" id="copyBtn">結果をコピー</button>`;
+  ST.lessons[cur.n]={score,total:tot,at:today()};
   save();
+  const txt=resultText(cur.n,ids,score,tot);
+  document.getElementById('copyBtn').onclick=function(){ toClipboard(txt,this); };
   box.scrollIntoView({behavior:'smooth',block:'center'});
 }
+
+function resultText(n,ids,score,tot){
+  const wrong=ids.filter(id=>!answered[id]).map(id=>`${id}(Sec${QBI[id].sec}/型${QBI[id].type})`);
+  const weak=weakSecs().map(x=>`Sec${x.n}(${x.p}%)`);
+  return `[AICX Lab] 第${n}回 ${score}/${tot} (${today()})\n`
+    +`誤答: ${wrong.length?wrong.join(', '):'なし'}\n`
+    +`累計弱点セクション: ${weak.length?weak.join(', '):'なし（3問以上回答したセクションはすべて80%以上）'}`;
+}
+function toClipboard(txt,btn){
+  const ok=()=>{ const o=btn.textContent; btn.textContent='コピーしました ✓'; setTimeout(()=>{btn.textContent=o;},1600); };
+  const ng=()=>prompt('下のテキストをコピーしてください',txt);
+  if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(txt).then(ok,ng);
+  else ng();
+}
+
+/* ============ 復習モード ============ */
+const REVIEW={on:false,ids:[],i:0,ok:0};
+function openReview(ids){
+  REVIEW.on=true; REVIEW.ids=ids.slice(); REVIEW.i=0; REVIEW.ok=0;
+  answered={}; curQ={}; stopAllTimers();
+  show('review'); window.scrollTo(0,0); renderReviewQ();
+}
+function renderReviewQ(){
+  const box=document.getElementById('reviewBody');
+  if(REVIEW.i>=REVIEW.ids.length){
+    const tot=REVIEW.ids.length, good=tot&&REVIEW.ok/tot>=0.8;
+    box.innerHTML=`<div class="card score">
+      <div class="n ${good?'good':'bad'}">${REVIEW.ok} / ${tot}</div>
+      <p style="font-size:14px;margin:6px 0 0">今日の復習おわり 🔥 連続 ${streakN()} 日</p>
+      <p class="lead" style="margin:8px 0 0">誤答は明日、正答は箱に応じて先の日付に再登場します。</p></div>`;
+    renderCounts();
+    return;
+  }
+  const q=prep(REVIEW.ids[REVIEW.i]);
+  box.innerHTML=`<div class="card"><div class="row">
+      <div class="grow" style="font-size:11px;color:var(--muted)">復習 ${REVIEW.i+1} / ${REVIEW.ids.length}</div>
+      <span class="pill">B${srsOf(q.id).b||1}</span></div></div>
+    <div class="card">${qHTML(q,REVIEW.i+1+'問目')}
+      <div id="revNext" style="display:none;margin-top:14px"><button class="tbtn" id="revNextBtn">次へ →</button></div>
+    </div>`;
+  bind(box);
+  box.querySelectorAll('.exp, .case').forEach(el=>linkify(el,1));
+  document.getElementById('revNextBtn').onclick=()=>{ REVIEW.i++; renderReviewQ(); };
+}
+function reviewAfter(ok){
+  if(ok)REVIEW.ok++;
+  document.getElementById('revNext').style.display='block';
+}
+
+/* ============ エクスポート／インポート ============ */
+const b64e=s=>btoa(Array.from(new TextEncoder().encode(s),c=>String.fromCharCode(c)).join(''));
+const b64d=s=>new TextDecoder().decode(Uint8Array.from(atob(s),c=>c.charCodeAt(0)));
 
 /* ============ nav ============ */
 function show(id){
   document.querySelectorAll('.view').forEach(v=>v.classList.toggle('on',v.id===id));
 }
-document.getElementById('back1').onclick=()=>{
-  Object.keys(timers).forEach(stopTimer);
-  renderHome(); show('home'); window.scrollTo(0,0);
+function toHome(){
+  stopAllTimers(); REVIEW.on=false;
+  renderCounts(); renderHome(); show('home'); window.scrollTo(0,0);
+}
+document.getElementById('back1').onclick=toHome;
+document.getElementById('back2').onclick=toHome;
+
+document.getElementById('expBtn').onclick=function(){ toClipboard(b64e(JSON.stringify(ST)),this); };
+document.getElementById('impBtn').onclick=()=>{
+  const raw=prompt('書き出したデータを貼り付けてください');
+  if(!raw) return;
+  let d=null;
+  try{ d=JSON.parse(b64d(raw.trim())); }catch(e){}
+  if(!d||d.v!==2){ alert('データの形式が違います。読み込みを中止しました。'); return; }
+  if(!confirm('現在の学習記録を、読み込んだデータで置き換えます。よろしいですか？')) return;
+  ST=d; save(); toHome(); alert('読み込みました。');
 };
 document.getElementById('resetBtn').onclick=()=>{
-  if(!confirm('学習記録をすべて消去します。よろしいですか？')) return;
-  ST={};save();renderHome();
+  if(!confirm('学習記録（SRS履歴・スコア・ストリーク）をすべて消去します。よろしいですか？')) return;
+  if(!confirm('本当に消去しますか？この操作は取り消せません。')) return;
+  ST=emptyST(); save(); toHome();
 };
 
 renderCounts(); renderHome();
