@@ -4,15 +4,15 @@
 
 ## 現在地
 
-- Build B3（第3回 Sec9-11 業務分解の道具箱・重量回）まで完了し、本番 https://kannohi1.github.io/aicx-lab/ で稼働中。B3 も HK 指示による前倒し実施（本来 8/31 予定）
-- サイトの実体: QB 54問（pool both 30 / mock 24）・用語 47語・レッスン公開 3/14回。localStorage スキーマ v2（SRS・daily・streak）で v1 からの自動移行あり
-- 次は Build B4（第4回 Sec12-13,16 ナレッジとデータ）
-- 最新リモート同期: 2026-08-28 13:35 JST — origin/main = HEAD (ahead 0 / behind 0)
+- Build B4（第4回 Sec12-13,16 ナレッジとデータ）まで完了し、本番 https://kannohi1.github.io/aicx-lab/ で稼働中。B2〜B4 はいずれも HK 指示による前倒し実施
+- サイトの実体: QB 76問（pool both 40 / mock 36）・用語 50語・レッスン公開 4/14回。localStorage スキーマ v2（SRS・daily・streak）で v1 からの自動移行あり
+- 次は Build B5（第5回 Sec14-15 RAG・ガバナンス・法務。RAG の精度切り分けフローが核）
+- 最新リモート同期: 2026-08-28 13:42 JST — origin/main = HEAD (ahead 0 / behind 0)
 
 ## 次にやること
 
-1. Build B4: 第4回 Sec12-13,16（ナレッジとデータ）→ DESIGN.md §4「第4回」 [Claude]
-2. 以降 B5〜B11 を進行表の順に 1セッション1Build で消化 [Claude]
+1. Build B5: 第5回 Sec14-15（RAG の検索側／生成側 切り分けフロー・ガバナンス4領域）→ DESIGN.md §4「第5回」 [Claude]
+2. 以降 B6〜B11 を進行表の順に 1セッション1Build で消化 [Claude]
 3. Build C1（模試エンジン＋弱点マップ）— 弱点マップは Build A で実装せず C1 へ据え置いた（設計どおり） [Claude]
 
 ## 未解決・保留
@@ -31,6 +31,7 @@
 | 日付は UTC ではなくローカル日で算出（`isoOf()`） | `toISOString()` 直用だと JST 00:00〜09:00 の学習が前日扱いになり、SRS の due とストリークが1日ずれる | 2026-08-28 [Claude] |
 | B5（卒業）の due は +3650日で表現 | 「日次復習に出さない」を専用フラグではなく間隔表の一値で表現でき、`dueIds()` に分岐を足さずに済む | 2026-08-28 [Claude] |
 | 想起クイズはレッスンのスコアに算入しない | スコアは「その回の理解度」を測る指標。過去問の出来で上下すると回ごとの比較ができなくなる | 2026-08-28 [Claude] |
+| 新規用語は用語集登録だけでなく、教材本文に必ずその語を出す | linkify は本文の完全一致語だけをリンク化し、`kw` チップは対象外。B4 で「知識流通」を kw にしか置かず本文リンクが生成されなかった | 2026-08-28 [Claude] |
 | 別プロジェクト `ask-anything-local-01/materials/aicx/progress.md` への Build 完了行の追記は HK 承認済み | BUILD_PLAN.md Step 4-2 の手順。毎 Build 発生するため都度確認しない | 2026-08-28 [Claude] |
 
 ## ハマりパターン
@@ -45,3 +46,4 @@
 - 2026-08-28 [Claude] Build B2（第2回 5D骨格＋Sec5-8：教材・lesson10問・模試プール12問・用語4語）を HK 指示で前倒し実装し本番反映。commit 812c0c9 / b70e12e
 - 2026-08-28 [Claude] STATUS.md 新規作成（進行表は BUILD_PLAN.md に置いたまま、本ファイルは判断とハマりパターンを持つ役割に限定）
 - 2026-08-28 [Claude] Build B3（第3回 Sec9-11 業務分解の道具箱：教材・lesson10問・模試プール12問・用語3語）を HK 指示で前倒し実装し本番反映。commit 4c19d60 / 2ec55db
+- 2026-08-28 [Claude] Build B4（第4回 Sec12-13,16 ナレッジとデータ：教材・lesson10問・模試プール12問・用語3語）を HK 指示で前倒し実装し本番反映。commit 04f3f09
