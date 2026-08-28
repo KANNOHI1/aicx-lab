@@ -4,15 +4,15 @@
 
 ## 現在地
 
-- Build A（SRS基盤）と Build B2（第2回コンテンツ）が完了し、本番 https://kannohi1.github.io/aicx-lab/ で稼働中。B2 は HK 指示による前倒し実施（本来 8/30 予定）
-- サイトの実体: QB 32問（pool both 20 / mock 12）・用語 44語・レッスン公開 2/14回。localStorage スキーマ v2（SRS・daily・streak）で v1 からの自動移行あり
-- 次は Build B3（第3回 Sec9-11 業務分解の道具箱・重量回）
-- 最新リモート同期: 2026-08-28 01:30 JST — origin/main = HEAD (ahead 0 / behind 0)
+- Build B3（第3回 Sec9-11 業務分解の道具箱・重量回）まで完了し、本番 https://kannohi1.github.io/aicx-lab/ で稼働中。B3 も HK 指示による前倒し実施（本来 8/31 予定）
+- サイトの実体: QB 54問（pool both 30 / mock 24）・用語 47語・レッスン公開 3/14回。localStorage スキーマ v2（SRS・daily・streak）で v1 からの自動移行あり
+- 次は Build B4（第4回 Sec12-13,16 ナレッジとデータ）
+- 最新リモート同期: 2026-08-28 13:35 JST — origin/main = HEAD (ahead 0 / behind 0)
 
 ## 次にやること
 
-1. Build B3: 第3回 Sec9-11（ECRS の順序・IPO/SIPOC/HTA/業務フロー図の使い分け表）→ DESIGN.md §4「第3回」 [Claude]
-2. 以降 B4〜B11 を進行表の順に 1セッション1Build で消化 [Claude]
+1. Build B4: 第4回 Sec12-13,16（ナレッジとデータ）→ DESIGN.md §4「第4回」 [Claude]
+2. 以降 B5〜B11 を進行表の順に 1セッション1Build で消化 [Claude]
 3. Build C1（模試エンジン＋弱点マップ）— 弱点マップは Build A で実装せず C1 へ据え置いた（設計どおり） [Claude]
 
 ## 未解決・保留
@@ -44,3 +44,4 @@
 - 2026-08-28 [Claude] Build A（QB一元化・スキーマv2・SRS・今日の復習・ストリーク・想起クイズ・結果コピー・エクスポート/インポート）を実装し本番反映。commit 33d8939 / a3d926e
 - 2026-08-28 [Claude] Build B2（第2回 5D骨格＋Sec5-8：教材・lesson10問・模試プール12問・用語4語）を HK 指示で前倒し実装し本番反映。commit 812c0c9 / b70e12e
 - 2026-08-28 [Claude] STATUS.md 新規作成（進行表は BUILD_PLAN.md に置いたまま、本ファイルは判断とハマりパターンを持つ役割に限定）
+- 2026-08-28 [Claude] Build B3（第3回 Sec9-11 業務分解の道具箱：教材・lesson10問・模試プール12問・用語3語）を HK 指示で前倒し実装し本番反映。commit 4c19d60 / 2ec55db
