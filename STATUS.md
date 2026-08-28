@@ -4,15 +4,16 @@
 
 ## 現在地
 
-- Build B5（第5回 Sec14-15 RAG・ガバナンス・法務）まで完了し、本番 https://kannohi1.github.io/aicx-lab/ で稼働中。B2〜B5 はいずれも HK 指示による前倒し実施。B5 は ultracode 有効セッションで、実装後に28体の敵対的検証 workflow を通した初の Build
-- サイトの実体: QB 98問（pool both 50 / mock 48）・用語 54語・レッスン公開 5/14回。localStorage スキーマ v2（SRS・daily・streak）で v1 からの自動移行あり
-- 次は Build B6（第6回 Sec17-18 PoC・成功3層＋申込リマインド強化。教材末尾に9/20申込CTA）
-- 最新リモート同期: 2026-08-28 14:05 JST — origin/main = HEAD (ahead 0 / behind 0)
+- Build B6（第6回 Sec17-18 PoCと成功の3層定義）まで完了し、本番 https://kannohi1.github.io/aicx-lab/ で稼働中。B2〜B6 はいずれも HK 指示による前倒し実施で、進行表の目安日より約1週間先行
+- サイトの実体: QB 120問（pool both 60 / mock 60）・用語 59語・レッスン公開 6/14回。localStorage スキーマ v2（SRS・daily・streak）で v1 からの自動移行あり
+- **HK の実務タスク: 受験申込（締切 2026-09-20）と公式テキスト購入。第6回の教材末尾に CTA を設置済み**
+- 次は Build B7（第7回 Sec19-22 自動化レベルとワークフロー設計。カスタムAI/WF/エージェントの3分類が必須論点）
+- 最新リモート同期: 2026-08-28 18:10 JST — origin/main = HEAD (ahead 0 / behind 0)
 
 ## 次にやること
 
-1. Build B6: 第6回 Sec17-18（PoC と成功の3層定義＋9/20申込リマインド CTA）→ DESIGN.md §4「第6回」 [Claude]
-2. 以降 B7〜B11 を進行表の順に 1セッション1Build で消化 [Claude]
+1. Build B7: 第7回 Sec19-22（自動化レベル・トリガー/アクション・条件分岐・コンテキスト設計）→ DESIGN.md §4「第7回」 [Claude]
+2. 以降 B8〜B11 を進行表の順に 1セッション1Build で消化 [Claude]
 3. Build C1（模試エンジン＋弱点マップ）— 弱点マップは Build A で実装せず C1 へ据え置いた（設計どおり） [Claude]
 
 ## 未解決・保留
@@ -49,3 +50,4 @@
 - 2026-08-28 [Claude] Build B3（第3回 Sec9-11 業務分解の道具箱：教材・lesson10問・模試プール12問・用語3語）を HK 指示で前倒し実装し本番反映。commit 4c19d60 / 2ec55db
 - 2026-08-28 [Claude] Build B4（第4回 Sec12-13,16 ナレッジとデータ：教材・lesson10問・模試プール12問・用語3語）を HK 指示で前倒し実装し本番反映。commit 04f3f09
 - 2026-08-28 [Claude] Build B5（第5回 Sec14-15 RAG・ガバナンス・法務：教材・lesson10問・模試プール12問・用語4語）を前倒し実装。敵対的検証 workflow（28 agents）が確認した4欠陥（型3順位語欠落・型誤分類・解説と型番号の矛盾・正解肢最長バイアス）を修正して本番反映。commit 2b7fa0c
+- 2026-08-28 [Claude] Build B6（第6回 Sec17-18 PoCと成功の3層定義：教材・lesson10問・模試プール12問・用語5語）を前倒し実装。B5 で確立した作問チェック（型3順位語・正解肢最長バイアス）を実装中に自己適用し、強い長さ手がかりを11件→1件に是正。教材末尾に9/20申込+テキスト購入CTAを設置。commit febc7a3
