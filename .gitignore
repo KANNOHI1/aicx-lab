@@ -3,3 +3,6 @@
 __pycache__/
 *.pyc
 claude_logs/
+
+# 公式テキストのスキャン・OCR（私的照合用・リポジトリに含めない）
+text_ocr/
