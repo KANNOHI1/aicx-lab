@@ -6,4 +6,7 @@
 - [feedback_announce_before_work.md](feedback_announce_before_work.md) — 作業に入る前に「何をやるか」を一言伝えてから着手する（自律作業モードの部分上書き）
 - [project_aicx_lab_question_quality.md](project_aicx_lab_question_quality.md) — 作問Buildごとの機械チェック項目と閾値（長さ手がかり・型3順位語）。指標は「単独最長」で測る。第1〜7回は 2026-08-29 に是正済み
 - [project_aicx_lab_final_review_plan.md](project_aicx_lab_final_review_plan.md) — 全Build完了後の横断レビューを Opus→Fable×max の2段構えで回す設計と、Fable 切替は HK 操作が必要なこと
-- [project_aicx_lab_deadline_and_text.md](project_aicx_lab_deadline_and_text.md) — 学習開始 2026-09-01 が納期。公式テキストは写真で 8/30 受領、暫定表現は Sec27 と成功3層の2箇所
+- [project_aicx_lab_deadline_and_text.md](project_aicx_lab_deadline_and_text.md) — 学習開始 2026-09-01 が納期。公式テキストは受領・書き起こし済み。Sec27=5つの問い / Sec18=3層フレームワークで公式表現が確定
+- [project_official_text_ocr.md](project_official_text_ocr.md) — 公式テキスト401ページの書き起こしの所在・三重検証の到達点（欠陥ゼロ）・順序の保証と「png で原文確認してから直す」恒久ルール
+- [feedback_ocr_verification_method.md](feedback_ocr_verification_method.md) — 大量書き起こしの三重検証手順（二重キー入力＋機構の違うOCR）。総数一致を根拠にしない・検証スクリプト自体の循環論法を疑う
+- [project_aicx_lab_mock_allocation.md](project_aicx_lab_mock_allocation.md) — 模試3セットの問題割付を一括で解く理由と tools/mockplan.js での再現手順
