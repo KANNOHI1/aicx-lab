@@ -10,3 +10,5 @@
 - [project_official_text_ocr.md](project_official_text_ocr.md) — 公式テキスト401ページの書き起こしの所在・三重検証の到達点（欠陥ゼロ）・順序の保証と「png で原文確認してから直す」恒久ルール
 - [feedback_ocr_verification_method.md](feedback_ocr_verification_method.md) — 大量書き起こしの三重検証手順（二重キー入力＋機構の違うOCR）。総数一致を根拠にしない・検証スクリプト自体の循環論法を疑う
 - [project_aicx_lab_mock_allocation.md](project_aicx_lab_mock_allocation.md) — 模試3セットの問題割付を一括で解く理由と tools/mockplan.js での再現手順
+- [feedback_primary_source_first.md](feedback_primary_source_first.md) — 一次資料が手に入ったら、局所補正でなくまず全体突き合わせを1回走らせる（aicx-lab で「高」47件・全面再構築に至った実例）
+- [project_aicx_lab_rebuild.md](project_aicx_lab_rebuild.md) — 全面再構築 F シリーズの設計と、公式「学習のポイント」を骨格にする原則
