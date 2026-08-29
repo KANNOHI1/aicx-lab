@@ -107,6 +107,6 @@ if(orphan.length){
 if(warnTerms.length){
   console.log('\n  WARN 用語集にあるが公式テキストに同表記で出現しない語: '+warnTerms.length+'語');
   console.log('        '+warnTerms.join(' / '));
-  console.log('        ※表記違いか公式に無い概念かは機械で判定できない。②本体レビューで裁定する');
+  console.log('        ※2026-08-30 に裁定済み（削除3・改称8）。DESIGN.md §4 の各回「用語」欄が正。Build F7 で反映する');
 }
 console.log('\n'+(ng===0?'機械検出項目はすべてクリア':'要対応 '+ng+'項目'));
