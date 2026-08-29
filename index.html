@@ -989,6 +989,63 @@ const L11_BODY = `
 <div class="tip"><b>今日のまとめ：</b>①<b>Development &amp; PoC</b>は成功条件に照らして<b>精度・定着・効果</b>の3層で測る。どの層の不良かで打ち手が全く違うので<b>先に切り分ける</b>。②<b>改善サイクル</b>は関門とセット。関門が無いまま回すと<b>PoC貧乏</b>。<b>止める判断も設計のうち</b>。③<b>Deployment &amp; Scale</b>は<b>本運用移行</b>・教育・<b>運用ルール</b>・<b>横展開</b>・継続改善。組織の話（第8-9回）がここに入る。④<b>横展開はそのままコピーしない</b>。設計の型として広げ、業務条件は確認し直す。⑤迷ったら3原則——業務が先／有人確認はリスクで決める／成功は定着で測る。</div>
 `;
 
+const L12_BODY = `
+<div class="goal"><b>この回のゴール</b><br>ここからは新しい知識を足す回ではありません。<b>覚えた内容を、試験と同じ条件で取り出せるか</b>を確かめる回です。弱点マップで穴を埋めてから模試①を75分通しで受け、結果を材料に「次に何を潰すか」を決めるところまでをやります。</div>
+
+<h3>この回の進め方（3ステップ・所要2時間半）</h3>
+<table>
+<tr><th>順番</th><th>やること</th><th>目安</th></tr>
+<tr><td><b>1</b></td><td>ホームの<b>弱点マップ</b>で正答率の低い上位3セクションを開き、該当回の教材を読み直す</td><td>40分</td></tr>
+<tr><td><b>2</b></td><td><b>模試①</b>を75分・中断なしで受ける（採点は自動）</td><td>75分</td></tr>
+<tr><td><b>3</b></td><td>結果画面の<b>「結果をコピー」</b>を押し、Claudeに貼って弱点分析を受ける</td><td>30分</td></tr>
+</table>
+<div class="tip"><b>順番を入れ替えないこと。</b>先に模試を受けてしまうと、弱点マップに「まだ復習していない範囲の誤り」が混ざり、どこが本当の穴なのかが読めなくなります。<b>埋めてから測る</b>——第6回で学んだ「成功条件を決めてから検証する」のと同じ作法です。</div>
+
+<h3>ステップ1｜弱点マップの読み方</h3>
+<div class="kw"><span>弱点マップ</span><span>データ不足</span><span>再読</span></div>
+<p>弱点マップはセクション別の正答率を並べたものです。見るときのルールは2つあります。</p>
+<table>
+<tr><th>表示</th><th>意味</th><th>やること</th></tr>
+<tr><td>正答率が低い</td><td>理解が浅いか、思い違いをしている</td><td>該当回の教材を読み直し、その回の理解チェックをもう一度解く</td></tr>
+<tr><td><b>データ不足</b>（3問未満）</td><td>まだ測れていないだけ。弱点とは限らない</td><td>低正答率より優先しない。模試①で自然に測られる</td></tr>
+</table>
+<div class="tip"><b>「データ不足」を弱点と読み違えないこと。</b>解いた数が少ないセクションは、たまたま1問間違えただけで0%と表示されます。<b>母数が小さい数字を根拠にしない</b>——これは試験勉強に限らず、データを扱うときの基本です。</div>
+
+<h3>ステップ2｜模試①の受け方（本番と同じ条件で）</h3>
+<div class="kw"><span>時間配分</span><span>見直しフラグ</span><span>設問先読み</span></div>
+<p>模試は50問75分。<b>1問あたり90秒</b>が基準です。ここで測りたいのは知識だけでなく、<b>時間内に判断を出し切れるか</b>です。</p>
+<table>
+<tr><th>場面</th><th>ルール</th><th>理由</th></tr>
+<tr><td>2つの選択肢で迷った</td><td>90秒を超えたら<b>見直しフラグ</b>を立てて次へ</td><td>1問に3分かけると、後半の易しい問題を落とす。取れる問題を取り切るほうが得点は伸びる</td></tr>
+<tr><td>ケース問題（制限時間つき）</td><td><b>設問を先に読んでから</b>シナリオ本文へ入る</td><td>何を問われるかを知らずに読むと、関係ない条件まで記憶しようとして時間が溶ける</td></tr>
+<tr><td>全問終わった</td><td>フラグを立てた問題だけをパレットから拾って再検討</td><td>頭から見直すと時間が足りない。判断を保留した問題にだけ時間を配る</td></tr>
+</table>
+<div class="tip"><b>途中で解説を見ないこと。</b>模試の値打ちは「何を知らないかが分かる」ところにあります。回答中にフィードバックを出さない作りにしてあるのはそのためです。中断して調べた時点で、その問題は測定になりません。</div>
+<p>途中で離席してもタイマーは進みます。回答内容は自動で保存され、リロードしても続きから再開できますが、<b>止まらない前提で始めてください</b>。</p>
+
+<h3>ステップ3｜結果を材料に、次の一手を決める</h3>
+<div class="kw"><span>章別正答率</span><span>型別正答率</span><span>結果コピー</span></div>
+<p>結果画面には得点だけでなく<b>章別</b>と<b>型別</b>の正答率が出ます。この2つは診断の意味が違います。</p>
+<table>
+<tr><th>どちらが低いか</th><th>読み取れること</th><th>打ち手</th></tr>
+<tr><td><b>章別</b>が特定の章だけ低い</td><td>その範囲の知識が入っていない</td><td>該当回の教材を読み直す。知識の穴なので埋められる</td></tr>
+<tr><td><b>型別</b>が特定の型だけ低い</td><td>知識ではなく<b>問われ方</b>に弱い（例：型3の優先順位判断だけ落とす）</td><td>その型の問題だけを横断で解き直す。章を跨いで同じ思考を繰り返す</td></tr>
+<tr><td>両方まんべんなく低い</td><td>時間切れの可能性が高い</td><td>得点そのものより、未回答が何問あったかを先に見る</td></tr>
+</table>
+<div class="tip"><b>未回答は誤答として集計され、翌日の復習キューに入ります。</b>「知らなかった問題」と「時間が足りなかった問題」は原因が別物ですが、どちらも次に取り組むべき対象であることは同じです。結果画面の誤答一覧で、自分がどちらだったかを1問ずつ思い出しておくこと。</div>
+<h4>Claudeへの貼り方</h4>
+<p>「結果をコピー」を押すと、得点・章別・型別・誤答の一覧がテキストで clipboard に入ります。そのまま Claude に貼り、<b>「この結果から、次の1週間で優先して潰すべき論点を3つ挙げて」</b>と聞くのが実用的です。得点の感想を求めても学習は進みません。<b>次の行動が決まる問い方をする</b>——これは第9回で学んだ、評価を行動につなげる考え方と同じです。</p>
+
+<h3>この回の合格ライン</h3>
+<table>
+<tr><th>模試</th><th>目標</th><th>下回ったときの判断</th></tr>
+<tr><td><b>模試①</b>（この回）</td><td>7割（35/50）</td><td>まだ間に合う。章別の穴を潰してから模試②へ</td></tr>
+<tr><td>模試②（第13回）</td><td>8割（40/50）</td><td>誤答の型を見て、型別の弱点を横断で解き直す</td></tr>
+<tr><td>模試③（第14回・短縮）</td><td>8割（20/25）</td><td>直前の体調管理と時間配分の確認に切り替える</td></tr>
+</table>
+<div class="tip"><b>1回の点数で実力を判定しないこと。</b>模試①が6割でも、原因が「時間切れ」なら知識の問題ではありません。<b>点数より、誤答の理由の内訳を見る</b>。そこが分からないまま次の模試に進むと、同じ落とし方を繰り返します。</div>
+`;
+
 /* ============ 問題バンク（全設問の単一ソース） ============ */
 const QB=[
  {id:'s02-01',sec:2,ch:1,type:1,pool:'both',
@@ -2901,7 +2958,7 @@ const LESSONS=[
   qids:['s28-01','s28-02','s28-03','s29-01','s29-02','s29-03','s30-01','s30-02'],caseIds:['c10-01','c10-02']},
  {n:11,t:'5Dモデル深掘り 後半 ＋ 総まとめ1枚図',sec:'Sec 31-32',ready:true,body:L11_BODY,
   qids:['s31-01','s31-02','s31-03','s31-04','s32-01','s32-02','s32-03','s32-04'],caseIds:['c11-01','c11-02']},
- {n:12,t:'総復習 → 模試①（75分）',sec:'全範囲',ready:false},
+ {n:12,t:'総復習 → 模試①（75分）',sec:'全範囲',ready:true,body:L12_BODY,qids:[],caseIds:[]},
  {n:13,t:'弱点補強 → 模試②',sec:'弱点中心',ready:false},
  {n:14,t:'最終確認・模試③・直前チェック',sec:'全範囲',ready:false}
 ];
@@ -3349,7 +3406,7 @@ function recallIds(n){
 function openLesson(n){
   REVIEW.on=false;
   cur=LESSONS.find(l=>l.n===n); answered={}; curQ={}; stopAllTimers();
-  const qs=cur.qids.map(prep), cs=cur.caseIds.map(prep), rc=recallIds(n).map(prep);
+  const qs=(cur.qids||[]).map(prep), cs=(cur.caseIds||[]).map(prep), rc=recallIds(n).map(prep);
 
   document.getElementById('lessonBody').innerHTML=`
     <div class="card">
@@ -3362,19 +3419,21 @@ function openLesson(n){
 
     <div class="card body">${cur.body}</div>
 
+    ${qs.length?`
     <div class="sec-title"><h2>理解チェック</h2><small>${qs.length}問・時間制限なし</small></div>
-    <div class="card" id="quizBox"></div>
+    <div class="card" id="quizBox"></div>`:''}
 
+    ${cs.length?`
     <div class="sec-title"><h2>ケース演習</h2><small>${cs.length}問・各3分</small></div>
     <div class="card"><p class="lead" style="margin:0">本番はケース読解型で、<b style="color:var(--warn)">時間切れが最大の敵</b>。必ずタイマーを開始してから読むこと。</p></div>
-    <div id="caseBox"></div>
+    <div id="caseBox"></div>`:''}
 
     <div class="card score" id="scoreBox" style="display:none"></div>`;
 
   const HR='<hr style="border:none;border-top:1px solid var(--line);margin:20px 0">';
   if(rc.length) document.getElementById('recallBox').innerHTML=rc.map((q,i)=>qHTML(q,'復習'+(i+1))).join(HR);
-  document.getElementById('quizBox').innerHTML=qs.map((q,i)=>qHTML(q,'Q'+(i+1))).join(HR);
-  document.getElementById('caseBox').innerHTML=cs.map((q,i)=>`<div class="card">
+  if(qs.length) document.getElementById('quizBox').innerHTML=qs.map((q,i)=>qHTML(q,'Q'+(i+1))).join(HR);
+  if(cs.length) document.getElementById('caseBox').innerHTML=cs.map((q,i)=>`<div class="card">
       <div class="timer" data-timer="${q.id}">
         <div class="t" id="t-${q.id}">3:00</div>
         <button class="tbtn" data-start="${q.id}">スタート</button>
@@ -3390,7 +3449,8 @@ function openLesson(n){
 }
 
 function checkDone(){
-  const ids=cur.qids.concat(cur.caseIds);
+  const ids=(cur.qids||[]).concat(cur.caseIds||[]);
+  if(!ids.length) return;                       /* 第12回のような問題を持たない回。想起クイズだけで完了扱いにしない */
   if(ids.some(id=>answered[id]===undefined)) return;
   const score=ids.filter(id=>answered[id]).length, tot=ids.length;
   const good=score/tot>=0.8;
@@ -3459,7 +3519,7 @@ function reviewAfter(ok){
 /* 出題セットの定義。ids が空のものは「準備中」。C2/D1/D2 で ids を入れる。 */
 const MOCKSETS=[
  {id:'m1',t:'模試①',n:50,min:75,ids:['m05-02','m04-01','m02-06','m08-10','s28-01','m03-03','s01-01','s20-02','m09-05','s04-02','m08-01','s05-01','s24-01','m10-01','m10-05','m03-05','m03-01','m03-20','m01-06','s10-01','m06-01','s19-02','m10-08','s03-01','m04-08','m02-10','m07-01','m09-04','s09-01','m05-08','m07-08','m08-03','m09-06','m03-07','m08-02','m07-02','c07-02','m02-02','m05-05','m02-08','m05-10','m03-04','m01-04','m10-04','c07-01','m03-14','m03-08','s08-02','s02-01','s29-01']},
- {id:'m2',t:'模試②',n:50,min:75,ids:[]},
+ {id:'m2',t:'模試②',n:50,min:75,ids:['m03-15','c01-01','s10-02','s31-01','m02-04','s21-01','m01-02','s30-01','m01-08','m04-04','m05-06','m05-01','m03-13','m03-21','m07-12','m05-11','s01-02','m03-11','m07-06','m03-19','m02-03','m01-05','m02-01','m09-03','m08-05','m05-07','m09-11','m05-03','m04-07','m08-04','m08-12','s11-01','m05-12','m07-10','m09-07','s03-02','m10-11','m05-04','m08-08','m04-03','m04-12','m01-03','m10-09','m02-09','s32-01','m09-09','m08-07','m09-08','s02-02','m03-02']},
  {id:'m3',t:'模試③（短縮）',n:25,min:37,ids:[]}
 ];
 const MOCKSET={}; MOCKSETS.forEach(m=>MOCKSET[m.id]=m);
