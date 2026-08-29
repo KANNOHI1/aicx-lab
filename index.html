@@ -138,6 +138,41 @@ header{position:sticky;top:0;z-index:50;backdrop-filter:blur(14px);
 .exp b{color:var(--accent2)}
 .src{margin-top:10px;padding-top:8px;border-top:1px solid var(--line);
   font-size:11px;color:var(--muted)}
+
+/* ===== 模試エンジン ===== */
+.mockbar{position:fixed;top:0;left:0;right:0;z-index:60;background:rgba(7,11,22,.94);
+  border-bottom:1px solid var(--line);backdrop-filter:blur(8px)}
+.mockbar .in{width:var(--safe);margin:0 auto;display:flex;align-items:center;gap:10px;padding:10px 0}
+.mockbar .clock{font-size:20px;font-weight:900;letter-spacing:.01em;font-variant-numeric:tabular-nums}
+.mockbar .clock.warn{color:var(--warn)}
+.mockbar .clock.danger{color:var(--ng);animation:blink 1s steps(2,start) infinite}
+@keyframes blink{50%{opacity:.35}}
+.mockbar .meta{font-size:11px;color:var(--muted);line-height:1.35}
+.mockbar .sp{margin-left:auto;display:flex;gap:6px}
+#mock{padding-top:64px}
+body.in-mock #siteHeader{display:none}
+.palette{display:grid;grid-template-columns:repeat(10,1fr);gap:5px}
+@media(max-width:520px){.palette{grid-template-columns:repeat(8,1fr)}}
+.pcell{aspect-ratio:1;border-radius:8px;border:1px solid var(--line);background:rgba(255,255,255,.04);
+  color:var(--muted);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;
+  cursor:pointer;position:relative;padding:0}
+.pcell.ans{border-color:rgba(77,163,255,.6);color:var(--accent);background:rgba(77,163,255,.12)}
+.pcell.cur{outline:2px solid var(--accent2);outline-offset:1px}
+.pcell.flag::after{content:'';position:absolute;top:2px;right:2px;width:5px;height:5px;
+  border-radius:99px;background:var(--warn)}
+.mnav{display:flex;gap:8px;align-items:center;margin-top:14px}
+.mnav .grow{flex:1}
+.opt.pick{border-color:var(--accent);background:rgba(77,163,255,.14)}
+.wkrow{margin:10px 0}
+.wkrow .lab{display:flex;gap:8px;align-items:baseline;font-size:12.5px}
+.wkrow .lab b{font-weight:700}
+.wkrow .lab .p{margin-left:auto;font-variant-numeric:tabular-nums;font-weight:700}
+.wkbar{height:7px;border-radius:99px;background:rgba(255,255,255,.08);overflow:hidden;margin-top:5px}
+.wkbar>i{display:block;height:100%;width:0}
+.wk-lo>i{background:var(--ng)} .wk-mid>i{background:var(--warn)} .wk-hi>i{background:var(--ok)}
+.wk-lo .p{color:var(--ng)} .wk-mid .p{color:var(--warn)} .wk-hi .p{color:var(--ok)}
+.wkrow.tap{cursor:pointer}
+.dim{font-size:12px;color:var(--muted)}
 .setrow{display:flex;gap:8px;flex-wrap:wrap}
 .setrow .tbtn{flex:1 1 auto}
 .tbtn.ng{background:rgba(255,107,107,.14);border-color:rgba(255,107,107,.45)}
@@ -164,7 +199,7 @@ footer{text-align:center;font-size:11px;color:var(--muted);padding:30px 0 10px}
 </head>
 <body>
 
-<header>
+<header id="siteHeader">
   <div class="wrap">
     <div class="hd">
       <div class="brand">🧠 AICX <span>Lab</span></div>
@@ -187,6 +222,11 @@ footer{text-align:center;font-size:11px;color:var(--muted);padding:30px 0 10px}
   </div>
 
   <div id="reviewCard"></div>
+
+  <div id="mockCard"></div>
+
+  <div class="sec-title"><h2>弱点マップ</h2><small>セクション別の正答率</small></div>
+  <div id="weakMap"></div>
 
   <div class="sec-title"><h2>カリキュラム</h2><small>全14回</small></div>
   <div id="lessonList"></div>
@@ -224,6 +264,20 @@ footer{text-align:center;font-size:11px;color:var(--muted);padding:30px 0 10px}
 <section id="review" class="view">
   <button class="back" id="back2">← ホームに戻る</button>
   <div id="reviewBody"></div>
+</section>
+
+
+<!-- ========== MOCK ========== -->
+<section id="mock" class="view">
+  <div class="mockbar" id="mockBar"><div class="in">
+    <div class="clock" id="mockClock">--:--</div>
+    <div class="meta" id="mockMeta"></div>
+    <div class="sp">
+      <button class="tbtn" id="mockFlag">見直し</button>
+      <button class="tbtn ng" id="mockSubmit">提出</button>
+    </div>
+  </div></div>
+  <div id="mockBody"></div>
 </section>
 
 <!-- ========== LESSON ========== -->
@@ -3098,6 +3152,7 @@ function loadST(){
   return s;
 }
 let ST=loadST();
+if(!ST.mocks) ST.mocks={};
 const save=()=>localStorage.setItem(KEY,JSON.stringify(ST));
 save();
 
@@ -3181,6 +3236,8 @@ function renderReviewCard(){
 
 function renderHome(){
   renderReviewCard();
+  renderMockCard();
+  renderWeakMap();
 
   document.getElementById('lessonList').innerHTML=LESSONS.map(l=>{
     const r=ST.lessons[l.n];
@@ -3397,6 +3454,276 @@ function reviewAfter(ok){
   document.getElementById('revNext').style.display='block';
 }
 
+
+/* ============ 模試エンジン ============ */
+/* 出題セットの定義。ids が空のものは「準備中」。C2/D1/D2 で ids を入れる。 */
+const MOCKSETS=[
+ {id:'m1',t:'模試①',n:50,min:75,ids:[]},
+ {id:'m2',t:'模試②',n:50,min:75,ids:[]},
+ {id:'m3',t:'模試③（短縮）',n:25,min:37,ids:[]}
+];
+const MOCKSET={}; MOCKSETS.forEach(m=>MOCKSET[m.id]=m);
+/* 残り時間の警告しきい値（秒）。試験は残10分で橙・残3分で赤。 */
+const thresholds=min=> min>=30 ? {w:600,d:180} : {w:60,d:30};
+
+function mockOf(id){ return MOCKSET[id]||{id:id,t:'エンジン動作確認',n:3,min:3,ids:[]}; }
+
+/* 動作確認用: 模試プールから n 問を引く（セット未整備でもエンジンを検証できる） */
+function trialIds(n){
+  const pool=QB.filter(q=>q.pool==='mock').map(q=>q.id);
+  const out=[];
+  while(out.length<n&&pool.length){ out.push(pool.splice(Math.floor(Math.random()*pool.length),1)[0]); }
+  return out;
+}
+
+/* --- 進行中状態（localStorage・リロードで再開） --- */
+function runOf(){ return ST.mocks && ST.mocks.run ? ST.mocks.run : null; }
+function startMock(setId){
+  const m=mockOf(setId);
+  const ids=(m.ids&&m.ids.length)?m.ids.slice():trialIds(m.n);
+  if(!ids.length){ alert('この模試はまだ準備中です。'); return; }
+  const shuf={};
+  ids.forEach(id=>{ const q=QBI[id]; shuffleQ(q); shuf[id]={o:q._o,a:q._a}; });
+  ST.mocks.run={set:setId,t:m.t,min:m.min,ids:ids,shuf:shuf,ans:{},flag:{},i:0,
+    startedAt:Date.now(),endsAt:Date.now()+m.min*60000};
+  save(); openMock();
+}
+function discardMock(){ delete ST.mocks.run; save(); toHome(); }
+
+let mockTimer=null;
+function openMock(){
+  const r=runOf(); if(!r){ toHome(); return; }
+  REVIEW.on=false; stopAllTimers();
+  document.body.classList.add('in-mock');
+  show('mock'); window.scrollTo(0,0);
+  renderMockQ(); startMockClock();
+}
+function startMockClock(){
+  if(mockTimer) clearInterval(mockTimer);
+  const tick=()=>{
+    const r=runOf(); if(!r){ clearInterval(mockTimer); mockTimer=null; return; }
+    const left=Math.max(0,Math.round((r.endsAt-Date.now())/1000));
+    const el=document.getElementById('mockClock');
+    const m=Math.floor(left/60),sec=left%60;
+    el.textContent=m+':'+String(sec).padStart(2,'0');
+    const th=thresholds(r.min);
+    el.classList.toggle('warn',left<=th.w&&left>th.d);
+    el.classList.toggle('danger',left<=th.d);
+    if(left<=0){ clearInterval(mockTimer); mockTimer=null; submitMock(true); }
+  };
+  tick(); mockTimer=setInterval(tick,1000);
+}
+function stopMockClock(){ if(mockTimer){clearInterval(mockTimer);mockTimer=null;} }
+
+function renderMockQ(){
+  const r=runOf(); if(!r) return;
+  const id=r.ids[r.i], q=QBI[id], sh=r.shuf[id];
+  const answeredN=Object.keys(r.ans).length;
+  document.getElementById('mockMeta').innerHTML=
+    `${r.t}<br>${r.i+1} / ${r.ids.length} 問目 ・ 回答済 ${answeredN}`;
+  const fb=document.getElementById('mockFlag');
+  fb.textContent=r.flag[id]?'見直し ●':'見直し';
+
+  document.getElementById('mockBody').innerHTML=`
+    <div class="card">
+      <div class="q" data-q="${id}">
+        <div class="qhead"><span class="qno">Q${r.i+1}</span>
+          <div class="qtext">${q.q}</div></div>
+        ${q.cs?`<div class="case">${q.cs}</div>`:''}
+        ${sh.o.map((o,j)=>`<div class="opt mopt${r.ans[id]===j?' pick':''}" data-i="${j}">
+            <div class="mk">${'ABCD'[j]}</div><div>${o}</div></div>`).join('')}
+      </div>
+      <div class="mnav">
+        <button class="tbtn" id="mPrev" ${r.i===0?'disabled':''}>← 前</button>
+        <div class="grow"></div>
+        <button class="tbtn" id="mNext" ${r.i===r.ids.length-1?'disabled':''}>次 →</button>
+      </div>
+    </div>
+    <div class="sec-title"><h2>問題一覧</h2><small>タップで移動</small></div>
+    <div class="card"><div class="palette" id="mPal"></div>
+      <p class="dim" style="margin:12px 0 0">枠が青＝回答済み ・ 右上の点＝見直しフラグ</p></div>`;
+
+  document.querySelectorAll('#mockBody .mopt').forEach(el=>{
+    el.onclick=()=>{
+      const rr=runOf(); if(!rr) return;
+      rr.ans[id]=+el.dataset.i; save();
+      document.querySelectorAll('#mockBody .mopt').forEach(o=>o.classList.toggle('pick',o===el));
+      renderPalette();
+      document.getElementById('mockMeta').innerHTML=
+        `${rr.t}<br>${rr.i+1} / ${rr.ids.length} 問目 ・ 回答済 ${Object.keys(rr.ans).length}`;
+    };
+  });
+  document.getElementById('mPrev').onclick=()=>{ const rr=runOf(); if(rr.i>0){rr.i--;save();renderMockQ();window.scrollTo(0,0);} };
+  document.getElementById('mNext').onclick=()=>{ const rr=runOf(); if(rr.i<rr.ids.length-1){rr.i++;save();renderMockQ();window.scrollTo(0,0);} };
+  document.querySelectorAll('#mockBody .case').forEach(el=>linkify(el,1));
+  renderPalette();
+}
+function renderPalette(){
+  const r=runOf(); if(!r) return;
+  const pal=document.getElementById('mPal'); if(!pal) return;
+  pal.innerHTML=r.ids.map((id,i)=>
+    `<button class="pcell${r.ans[id]!==undefined?' ans':''}${r.flag[id]?' flag':''}${i===r.i?' cur':''}" data-p="${i}">${i+1}</button>`).join('');
+  pal.querySelectorAll('[data-p]').forEach(b=>b.onclick=()=>{
+    const rr=runOf(); rr.i=+b.dataset.p; save(); renderMockQ(); window.scrollTo(0,0);
+  });
+}
+
+function submitMock(auto){
+  const r=runOf(); if(!r) return;
+  const un=r.ids.filter(id=>r.ans[id]===undefined).length;
+  if(!auto){
+    const msg=un?`未回答が ${un} 問あります。提出しますか？`:'提出しますか？';
+    if(!confirm(msg)) return;
+  }
+  stopMockClock();
+  const sec=Math.round((Date.now()-r.startedAt)/1000);
+  const wrong=[], byCh={}, byType={};
+  let score=0;
+  r.ids.forEach(id=>{
+    const q=QBI[id], sh=r.shuf[id];
+    const ok = r.ans[id]!==undefined && r.ans[id]===sh.a;
+    if(ok)score++; else wrong.push(id);
+    const c=byCh[q.ch]||(byCh[q.ch]={r:0,n:0}); c.n++; if(ok)c.r++;
+    const t=byType[q.type]||(byType[q.type]={r:0,n:0}); t.n++; if(ok)t.r++;
+    srsAnswer(id,ok,true);   /* 模試は診断。誤答→B1 */
+  });
+  ST.mocks.done=ST.mocks.done||{};
+  ST.mocks.done[r.set]={score,total:r.ids.length,sec,at:today()};
+  const done=ST.mocks.done[r.set];
+  const ids=r.ids.slice(), shuf=r.shuf, ans=r.ans;
+  delete ST.mocks.run; save();
+  renderMockResult({score,total:ids.length,sec,ids,shuf,ans,wrong,byCh,byType,title:r.t,auto:!!auto});
+}
+
+const CHNAME={1:'第1章 基礎',2:'第2章 業務の基礎',3:'第3章 データ',4:'第4章 ワークフロー',5:'第5章 組織',6:'第6章 5D'};
+const TYPENAME={1:'型1 定義・構成要素',2:'型2 適用範囲の判断',3:'型3 論点整理・優先順位',
+  4:'型4 前提整理',5:'型5 設計の妥当性',6:'型6 組織導入',7:'型7 5Dの進め方'};
+function barRow(label,r,n,tap){
+  if(!n) return '';
+  const p=Math.round(r/n*100);
+  const cls=p<60?'wk-lo':(p<80?'wk-mid':'wk-hi');
+  return `<div class="wkrow ${cls}${tap?' tap':''}"${tap?` data-wk="${tap}"`:''}>
+    <div class="lab"><b>${label}</b><span class="dim">${r}/${n}</span><span class="p">${p}%</span></div>
+    <div class="wkbar"><i style="width:${p}%"></i></div></div>`;
+}
+function renderMockResult(R){
+  stopMockClock();
+  const pct=Math.round(R.score/R.total*100);
+  const good=pct>=80;
+  const mm=Math.floor(R.sec/60), ss=R.sec%60;
+  const HR='<hr style="border:none;border-top:1px solid var(--line);margin:20px 0">';
+  document.getElementById('mockBar').style.display='none';
+  document.body.classList.remove('in-mock');
+  document.getElementById('mockBody').innerHTML=`
+    <button class="back" id="mockBack">← ホームに戻る</button>
+    <div class="card score">
+      <div class="n ${good?'good':'bad'}">${R.score} / ${R.total}</div>
+      <p style="font-size:14px;margin:6px 0 2px">${pct}%${R.auto?' ・ 時間切れで自動提出':''}</p>
+      <p class="lead" style="margin:0">所要 ${mm}分${ss}秒 ・ ${R.title}</p>
+      <button class="tbtn" id="mockCopy" style="margin-top:12px">結果をコピー</button>
+    </div>
+    <div class="sec-title"><h2>章別</h2><small>正答率</small></div>
+    <div class="card">${Object.keys(R.byCh).sort().map(c=>barRow(CHNAME[c]||('第'+c+'章'),R.byCh[c].r,R.byCh[c].n)).join('')}</div>
+    <div class="sec-title"><h2>型別</h2><small>問いの型ごと</small></div>
+    <div class="card">${Object.keys(R.byType).sort().map(t=>barRow(TYPENAME[t]||('型'+t),R.byType[t].r,R.byType[t].n)).join('')}</div>
+    <div class="sec-title"><h2>誤答</h2><small>${R.wrong.length}問・解説付き</small></div>
+    <div class="card" id="mockWrong">${R.wrong.length?'':'<p class="lead" style="margin:0">誤答はありません。</p>'}</div>`;
+  if(R.wrong.length){
+    document.getElementById('mockWrong').innerHTML=R.wrong.map((id,i)=>{
+      const q=QBI[id], sh=R.shuf[id], picked=R.ans[id];
+      return `<div class="q">
+        <div class="qhead"><span class="qno">誤答${i+1}</span><div class="qtext">${q.q}</div></div>
+        ${q.cs?`<div class="case">${q.cs}</div>`:''}
+        ${sh.o.map((o,j)=>`<div class="opt locked${j===sh.a?' correct':''}${j===picked&&picked!==sh.a?' wrong':''}">
+            <div class="mk">${j===sh.a?'✓':(j===picked?'✕':'ABCD'[j])}</div><div>${o}</div></div>`).join('')}
+        <div class="exp show"><b>解説</b><br>${q.e}<div class="src">${srcBadge(q)}</div>
+          ${picked===undefined?'<div class="src">※未回答</div>':''}</div>
+      </div>`;
+    }).join(HR);
+    document.querySelectorAll('#mockWrong .exp, #mockWrong .case').forEach(el=>linkify(el,1));
+  }
+  const txt=`[AICX Lab] ${R.title} ${R.score}/${R.total} (${pct}%) 所要${mm}分${ss}秒 (${today()})\n`
+    +`章別: ${Object.keys(R.byCh).sort().map(c=>'Ch'+c+' '+Math.round(R.byCh[c].r/R.byCh[c].n*100)+'%').join(', ')}\n`
+    +`型別: ${Object.keys(R.byType).sort().map(t=>'型'+t+' '+Math.round(R.byType[t].r/R.byType[t].n*100)+'%').join(', ')}\n`
+    +`誤答: ${R.wrong.length?R.wrong.map(id=>id+'(Sec'+QBI[id].sec+'/型'+QBI[id].type+')').join(', '):'なし'}`;
+  document.getElementById('mockCopy').onclick=function(){ toClipboard(txt,this); };
+  document.getElementById('mockBack').onclick=toHome;
+  window.scrollTo(0,0);
+}
+
+/* --- ホームの模試カード --- */
+function renderMockCard(){
+  const box=document.getElementById('mockCard');
+  const r=runOf();
+  const allDone=LESSONS.filter(l=>l.ready).every(l=>ST.lessons[l.n]);
+  if(r){
+    const left=Math.max(0,Math.round((r.endsAt-Date.now())/1000));
+    const m=Math.floor(left/60),sec=left%60;
+    box.innerHTML=`<div class="card">
+      <div class="row"><div class="grow">
+        <div style="font-size:11px;color:var(--muted)">受験中</div>
+        <div style="font-size:15px;font-weight:700;margin-top:2px">${r.t} ・ 残り ${m}:${String(sec).padStart(2,'0')}</div>
+      </div><span class="pill now">${Object.keys(r.ans).length}/${r.ids.length}</span></div>
+      <div class="setrow" style="margin-top:12px">
+        <button class="tbtn" id="mockResume">再開する</button>
+        <button class="tbtn ng" id="mockDiscard">破棄する</button>
+      </div></div>`;
+    document.getElementById('mockResume').onclick=openMock;
+    document.getElementById('mockDiscard').onclick=()=>{
+      if(!confirm('受験中のデータを破棄します。よろしいですか？')) return;
+      discardMock();
+    };
+    return;
+  }
+  const rows=MOCKSETS.map(m=>{
+    const d=(ST.mocks.done||{})[m.id];
+    const ready=m.ids.length>0;
+    const pill=d?`<span class="pill done">✓ ${d.score}/${d.total}</span>`
+      :(ready?'<span class="pill now">未受験</span>':'<span class="pill">準備中</span>');
+    return `<button class="btn" ${ready?'':'disabled'} data-mock="${m.id}"><div class="row"><div class="grow">
+      <div style="font-size:11px;color:var(--muted)">${m.n}問 ・ ${m.min}分</div>
+      <div style="font-size:14.5px;font-weight:700;margin-top:2px">${m.t}</div>
+    </div>${pill}</div></button>`;
+  }).join('');
+  box.innerHTML=`<div class="sec-title"><h2>模試</h2><small>本番形式・75分</small></div>
+    ${allDone?'':'<div class="card"><p class="lead" style="margin:0">推奨: 全範囲の学習を終えてから受験してください。</p></div>'}
+    ${rows}
+    <div class="card"><div class="row"><div class="grow">
+      <div style="font-size:11px;color:var(--muted)">3問 ・ 3分</div>
+      <div style="font-size:13.5px;font-weight:700;margin-top:2px">エンジン動作確認</div>
+      <p class="dim" style="margin:6px 0 0">模試プールから3問を引いて、本番と同じ画面・タイマー・採点を試せます。</p>
+      </div></div>
+      <div class="setrow" style="margin-top:12px"><button class="tbtn" data-mock="trial">試す</button></div>
+    </div>`;
+  box.querySelectorAll('[data-mock]').forEach(b=>b.onclick=()=>startMock(b.dataset.mock));
+}
+
+/* --- 弱点マップ --- */
+function renderWeakMap(){
+  const box=document.getElementById('weakMap');
+  const st=secStats();
+  const rows=Object.keys(st).map(Number).sort((a,b)=>a-b)
+    .map(n=>({n,r:st[n].r,w:st[n].w}));
+  const enough=rows.filter(x=>x.r+x.w>=3).sort((a,b)=>(a.r/(a.r+a.w))-(b.r/(b.r+b.w)));
+  const few=rows.filter(x=>x.r+x.w<3);
+  if(!enough.length){
+    box.innerHTML=`<div class="card"><p class="lead" style="margin:0">まだデータがありません。各セクション3問以上に答えると、正答率が表示されます。</p></div>`;
+    return;
+  }
+  box.innerHTML=`<div class="card">
+    ${enough.map(x=>barRow(`Sec${x.n} ${SECT[x.n]||''}`,x.r,x.r+x.w,x.n)).join('')}
+    ${few.length?`<p class="dim" style="margin:14px 0 0">データ不足（3問未満）: ${few.map(x=>'Sec'+x.n).join(', ')}</p>`:''}
+    <p class="dim" style="margin:10px 0 0">赤 &lt;60% ・ 橙 60〜80% ・ 緑 80%以上。行をタップすると、そのセクションで間違えた問題を復習できます。</p>
+  </div>`;
+  box.querySelectorAll('[data-wk]').forEach(el=>el.onclick=()=>{
+    const sec=+el.dataset.wk;
+    const ids=Object.keys(ST.srs).filter(id=>QBI[id]&&QBI[id].sec===sec&&ST.srs[id].w>0)
+      .sort((a,b)=>ST.srs[b].w-ST.srs[a].w);
+    if(!ids.length){ alert('このセクションに誤答はありません。'); return; }
+    openReview(ids);
+  });
+}
+
 /* ============ エクスポート／インポート ============ */
 const b64e=s=>btoa(Array.from(new TextEncoder().encode(s),c=>String.fromCharCode(c)).join(''));
 const b64d=s=>new TextDecoder().decode(Uint8Array.from(atob(s),c=>c.charCodeAt(0)));
@@ -3406,11 +3733,22 @@ function show(id){
   document.querySelectorAll('.view').forEach(v=>v.classList.toggle('on',v.id===id));
 }
 function toHome(){
-  stopAllTimers(); REVIEW.on=false;
+  stopAllTimers(); stopMockClock(); REVIEW.on=false;
+  const mb=document.getElementById('mockBar'); if(mb) mb.style.display='';
+  document.body.classList.remove('in-mock');
   renderCounts(); renderHome(); show('home'); window.scrollTo(0,0);
 }
 document.getElementById('back1').onclick=toHome;
 document.getElementById('back2').onclick=toHome;
+
+document.getElementById('mockFlag').onclick=()=>{
+  const r=runOf(); if(!r) return;
+  const id=r.ids[r.i];
+  if(r.flag[id]) delete r.flag[id]; else r.flag[id]=1;
+  save(); renderPalette();
+  document.getElementById('mockFlag').textContent=r.flag[id]?'見直し ●':'見直し';
+};
+document.getElementById('mockSubmit').onclick=()=>submitMock(false);
 
 document.getElementById('expBtn').onclick=function(){ toClipboard(b64e(JSON.stringify(ST)),this); };
 document.getElementById('impBtn').onclick=()=>{
