@@ -15,16 +15,22 @@ const SETS=[
 const AGG={CH:[20,15,25,20,20,25],TY:[30,20,20,18,17,10,10]};
 const cap=(pool,c,t)=>QB.filter(q=>q.pool===pool&&q.ch===c&&q.type===t).length;
 
-/* 章→型の最小費用流。mock プール優先（費用0）、lesson 併用は費用10、新規作問は費用1000 */
-function solve(CH,TY,capFn){
-  const N=15,S=0,T=14,g=[];for(let i=0;i<N;i++)g.push([]);
+/* 章→型の最小費用流。mock プール優先（費用0）、lesson 併用は費用10、新規作問は費用1000。
+   章と型のあいだに (章,型) の中継ノードを置き、その容量で「1セットが1つの (章,型) から取れる上限」を縛る。
+   上限＝その (章,型) が持つ Section の数。制約①（同セットに同Sec同型を入れない）から導かれる必然で、
+   これを流量段階で教えないと、Section が1つしかないセルに2問を割り当てる解が出て後段が詰む。 */
+function solve(CH,TY,capFn,midCap){
+  const MID=(c,t)=>14+(c-1)*7+(t-1);   /* 0=S, 1-6=章, 7-13=型, 14-55=(章,型)中継, 56=T */
+  const N=14+42+1,S=0,T=14+42,g=[];for(let i=0;i<N;i++)g.push([]);
   const add=(u,v,c,w)=>{g[u].push({v,c,w,r:g[v].length});g[v].push({v:u,c:0,w:-w,r:g[u].length-1});};
   for(let c=1;c<=6;c++)add(S,c,CH[c-1],0);
   for(let t=1;t<=7;t++)add(6+t,T,TY[t-1],0);
   const arc={};
-  for(let c=1;c<=6;c++)for(let t=1;t<=7;t++){arc[c+','+t]=[];
-    ['mock','both','mock2','new'].forEach((k,i)=>{const cp=capFn(c,t,k);add(c,6+t,cp,[0,10,20,1000][i]);
-      arc[c+','+t].push({k,cp,u:c,i:g[c].length-1});});}
+  for(let c=1;c<=6;c++)for(let t=1;t<=7;t++){
+    const m=MID(c,t);add(c,m,midCap?midCap(c,t):1e9,0);
+    arc[c+','+t]=[];
+    ['mock','both','mock2','new'].forEach((k,i)=>{const cp=capFn(c,t,k);add(m,6+t,cp,[0,10,20,1000][i]);
+      arc[c+','+t].push({k,cp,u:m,i:g[m].length-1});});}
   let flow=0;
   for(;;){const d=Array(N).fill(1e18),pv=Array(N).fill(-1),pe=Array(N).fill(-1);d[S]=0;
     for(let it=0;it<N;it++)for(let u=0;u<N;u++){if(d[u]>=1e18)continue;
@@ -37,6 +43,9 @@ function solve(CH,TY,capFn){
     if(used>0){out[key]=out[key]||{};out[key][a.k]=used;}}
   return {flow,out};
 }
+/* (章,型) が持つ Section の数＝1セットがそのセルから取れる上限 */
+const SECN={};QB.forEach(q=>{const k=q.ch+','+q.type;(SECN[k]=SECN[k]||new Set()).add(q.sec);});
+const secCount=(c,t)=>(SECN[c+','+t]||{size:0}).size;
 
 const AG=solve(AGG.CH,AGG.TY,(c,t,k)=>k==='new'?99:cap(k,c,t));
 const newNeeded=Object.values(AG.out).reduce((s,o)=>s+(o.new||0),0);
@@ -61,7 +70,7 @@ SETS.forEach((S_,idx)=>{
     const q=idx<SETS.length-1 ? Math.round(a*S_.n/left) : a;   // 取り分
     return k==='mock' ? q : a-q;                                // mock2 = 取り分超過（費用高）
   };
-  const r=solve(S_.CH,S_.TY,(c,t,k)=>k==='new'?0:share(c,t,k));
+  const r=solve(S_.CH,S_.TY,(c,t,k)=>k==='new'?0:share(c,t,k),secCount);
   left-=S_.n;
   for(const key in r.out)for(const k in r.out[key])rem2[key][k==='mock2'?'mock':k]-=r.out[key][k];
   for(const key in r.out)for(const k in r.out[key]){
@@ -93,40 +102,84 @@ const ctOrder=Object.keys(CT).sort((A,B)=>{
     return secs.size-maxNeed;};
   return slack(A)-slack(B)||A.localeCompare(B);});
 
-for(const key of ctOrder){
-  const [ch,ty]=key.split(',');
-  const bySec={};                                 // sec -> {pool: [問題...]}
+/* Section 割当を「章まるごと」で厳密に解く。
+   制約① 同じセットに同じ (Section,型) を2問入れない
+   制約② 同じ Section は1セットに2問まで
+   ②は Section が章に属するため章の中でしか効かない。よって章が正しい分解単位になる。
+   （(章,型) セル単位で順に解くと、先に解いた型が Section 枠を食って後の型が②を満たせなくなる。
+     貪欲も同じ理由で「在庫はあるのに失敗する」——2026-08-30 F11 で実測。）
+   規模は1章あたり高々 3セット×10問・Section は4〜7個なので、MRV 付きバックトラックで全探索する。 */
+let budgetHit=false;                    // 探索が上限に達したか（infeasible なら証明に時間がかかるため打ち切る）
+function solveChapter(cells, secInSet, hard2){
+  let steps=0;const LIMIT=200000;
+  const slots=[];
+  for(const {ty,need} of cells)
+    for(const pool of Object.keys(need).sort())
+      need[pool].forEach((n,i)=>{for(let k=0;k<n;k++)slots.push({ty,pool,i});});
+  const stock={};                       // ty -> sec -> pool -> 残数
+  for(const {ty,bySec} of cells){stock[ty]={};
+    for(const sec in bySec){stock[ty][sec]={};for(const p in bySec[sec])stock[ty][sec][p]=bySec[sec][p].length;}}
+  const usedST=[{},{},{}];              // set -> ty -> Set(sec)   ①
+  const cnt=[{},{},{}];                 // set -> sec -> 本セルで積んだ数（②は secInSet と合算）
+  const assign=new Array(slots.length).fill(null);
+  const cands=k=>{const {ty,pool,i}=slots[k];
+    return Object.keys(stock[ty]).sort((a,b)=>Number(a)-Number(b))
+      .filter(sec=>(stock[ty][sec][pool]||0)>0
+        && !(usedST[i][ty]&&usedST[i][ty].has(sec))
+        && (!hard2 || ((secInSet[i][sec]||0)+(cnt[i][sec]||0))<2));};
+  const dfs=done=>{
+    if(done===slots.length)return true;
+    if(++steps>LIMIT){budgetHit=true;return false;}
+    let best=-1,bc=null;                // MRV: 候補の最も少ないスロットから決める
+    for(let k=0;k<slots.length;k++){if(assign[k])continue;
+      const c=cands(k);if(!bc||c.length<bc.length){best=k;bc=c;if(!c.length)break;}}
+    if(!bc.length)return false;
+    const {ty,pool,i}=slots[best];
+    bc.sort((x,y)=>(stock[ty][x][pool]-stock[ty][y][pool])||Number(x)-Number(y));
+    for(const sec of bc){
+      assign[best]={sec};stock[ty][sec][pool]--;
+      (usedST[i][ty]=usedST[i][ty]||new Set()).add(sec);cnt[i][sec]=(cnt[i][sec]||0)+1;
+      if(dfs(done+1))return true;
+      cnt[i][sec]--;usedST[i][ty].delete(sec);stock[ty][sec][pool]++;assign[best]=null;
+    }
+    return false;
+  };
+  return dfs(0)?slots.map((s,k)=>({...s,sec:assign[k].sec})):null;
+}
+
+const byCh={};
+for(const key of ctOrder){const [ch,ty]=key.split(',');
+  const bySec={};
   QB.filter(q=>q.ch==ch&&q.type==ty).forEach(q=>{
     (bySec[q.sec]=bySec[q.sec]||{})[q.pool]=((bySec[q.sec]||{})[q.pool]||[]).concat(q);});
+  Object.values(bySec).forEach(o=>Object.values(o).forEach(a=>a.sort((u,v)=>u.id.localeCompare(v.id))));
   const need={};for(const pool in CT[key])need[pool]=CT[key][pool].slice();
-  const usedSec=[new Set(),new Set(),new Set()];   // このセットがこの (章,型) で使った Section
-  for(;;){
-    /* 残り必要数の多い (セット, pool) から埋める */
-    const slots=[];
-    for(const pool in need)need[pool].forEach((n,i)=>{if(n>0)slots.push({pool,i,n});});
-    if(!slots.length)break;
-    slots.sort((x,y)=>y.n-x.n||x.i-y.i||x.pool.localeCompare(y.pool));
-    const {pool,i:idx}=slots[0];
-    const avail=sec=>((bySec[sec]||{})[pool]||[]).length>0;
-    let cands=Object.keys(bySec).filter(sec=>avail(sec)&&!usedSec[idx].has(sec)&&(secInSet[idx][sec]||0)<2);
-    let forced=false;
-    if(!cands.length){                             // Section を分けきれない（feasible 判定が理由を示す）
-      cands=Object.keys(bySec).filter(avail);
-      if(!cands.length){shortage.push('ch'+ch+'型'+ty+'('+pool+') 模試'+(idx+1)+' 在庫切れ 残'+need[pool][idx]+'問');
-        need[pool][idx]=0;continue;}
-      forced=true;
-    }
-    /* そのセットでの使用回数が少ない順 → 在庫の少ない Section から消化 → Section 番号 */
-    cands.sort((x,y)=>(secInSet[idx][x]||0)-(secInSet[idx][y]||0)
-      ||bySec[x][pool].length-bySec[y][pool].length||Number(x)-Number(y));
-    const sec=cands[0];
-    bySec[sec][pool].sort((u,v)=>u.id.localeCompare(v.id));
-    const q=bySec[sec][pool].shift();
-    usedSec[idx].add(sec);secInSet[idx][sec]=(secInSet[idx][sec]||0)+1;
-    PLAN[idx].push(q.id);need[pool][idx]--;
-    if(forced)dupForced.push('ch'+ch+'型'+ty+' → 模試'+(idx+1)+' で Sec'+sec+' が重複');
-  }
+  (byCh[ch]=byCh[ch]||[]).push({ty,bySec,need});}
+
+for(const ch of Object.keys(byCh).sort((a,b)=>Number(a)-Number(b))){
+  const cells=byCh[ch];
+  budgetHit=false;
+  let sol=solveChapter(cells,secInSet,true), relaxed=false;
+  if(!sol){sol=solveChapter(cells,secInSet,false);relaxed=true;}
+  if(!sol){dupForced.push('第'+ch+'章 → '+(budgetHit?'探索上限に到達（在庫を増やすか制約を見直す）':'Section を分けきれない（①も満たせない）'));
+    sol=[];
+    for(const {ty,bySec,need} of cells){
+      const left={};Object.keys(bySec).forEach(s=>{left[s]={};for(const p in bySec[s])left[s][p]=bySec[s][p].length;});
+      for(const pool of Object.keys(need).sort())need[pool].forEach((n,i)=>{
+        for(let k=0;k<n;k++){
+          const sec=Object.keys(left).sort((x,y)=>Number(x)-Number(y)).find(s=>(left[s][pool]||0)>0);
+          if(!sec){shortage.push('ch'+ch+'型'+ty+'('+pool+') 模試'+(i+1)+' 在庫切れ');continue;}
+          left[sec][pool]--;sol.push({ty,pool,i,sec});}});}
+  }else if(relaxed){
+    dupForced.push('第'+ch+'章 → 同じ Section が1セットに3問以上（②のみ違反）');}
+  const cellOf={};cells.forEach(c=>cellOf[c.ty]=c);
+  sol.sort((a,b)=>a.i-b.i||Number(a.ty)-Number(b.ty)||Number(a.sec)-Number(b.sec)||a.pool.localeCompare(b.pool));
+  for(const {ty,pool,i,sec} of sol){
+    const q=cellOf[ty].bySec[sec][pool].shift();
+    secInSet[i][sec]=(secInSet[i][sec]||0)+1;
+    PLAN[i].push(q.id);}
 }
+
 {const all=PLAN.flat();
  if(new Set(all).size!==all.length)throw new Error('セット間で問題が重複した');
  if(all.length!==125)throw new Error('総数が125問でない: '+all.length);}
