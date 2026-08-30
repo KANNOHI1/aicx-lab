@@ -17,3 +17,4 @@
 - [feedback_large_file_edit_safety.md](feedback_large_file_edit_safety.md) — 数千行の単一ファイルを node で splice/replace するときの事故パターン。行番号は3点 assert・長文の完全一致 replace は使わない・書き込みは末尾で1回
 - [feedback_js_duplicate_object_keys.md](feedback_js_duplicate_object_keys.md) — JS オブジェクトリテラルの重複キーは後勝ちで前が黙って消える。件数検査はユニーク件数と一致するかまで見る
 - [feedback_spawn_task_same_worktree.md](feedback_spawn_task_same_worktree.md) — spawn_task のチップは同じ作業ツリーの現ブランチへ直接コミットしうる。並行編集の衝突を前提に commit 直前で git log を確認する
+- [feedback_decompose_before_search.md](feedback_decompose_before_search.md) — 貪欲＋局所探索が頭打ちになったら、探索を足す前に「解く単位（分解）」を疑う
