@@ -13,3 +13,4 @@
 - [feedback_primary_source_first.md](feedback_primary_source_first.md) — 一次資料が手に入ったら、局所補正でなくまず全体突き合わせを1回走らせる（aicx-lab で「高」47件・全面再構築に至った実例）
 - [project_aicx_lab_rebuild.md](project_aicx_lab_rebuild.md) — 全面再構築 F シリーズの設計と、公式「学習のポイント」を骨格にする原則
 - [feedback_context_budget_by_source_volume.md](feedback_context_budget_by_source_volume.md) — 一次資料を通読する作業は「通読量」でセッションを割る。auto-compact で一次資料の記憶が欠けると「推測で書く」失敗が再発する
+- [feedback_no_side_reminders.md](feedback_no_side_reminders.md) — 作業報告に本題外のリマインドを足さない。進捗を聞かれたら残セッション数と日付で答える
