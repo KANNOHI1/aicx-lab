@@ -14,3 +14,4 @@
 - [project_aicx_lab_rebuild.md](project_aicx_lab_rebuild.md) — 全面再構築 F シリーズの設計と、公式「学習のポイント」を骨格にする原則
 - [feedback_context_budget_by_source_volume.md](feedback_context_budget_by_source_volume.md) — 一次資料を通読する作業は「通読量」でセッションを割る。auto-compact で一次資料の記憶が欠けると「推測で書く」失敗が再発する
 - [feedback_no_side_reminders.md](feedback_no_side_reminders.md) — 作業報告に本題外のリマインドを足さない。進捗を聞かれたら残セッション数と日付で答える
+- [feedback_large_file_edit_safety.md](feedback_large_file_edit_safety.md) — 数千行の単一ファイルを node で splice/replace するときの事故パターン。行番号は3点 assert・長文の完全一致 replace は使わない・書き込みは末尾で1回
