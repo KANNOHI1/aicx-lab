@@ -20,3 +20,4 @@
 - [feedback_decompose_before_search.md](feedback_decompose_before_search.md) — 貪欲＋局所探索が頭打ちになったら、探索を足す前に「解く単位（分解）」を疑う
 - [project_aicx_lab_exam_facts.md](project_aicx_lab_exam_facts.md) — 本番の実態＝全50問75分・合格ライン非公開は公式明言・受験期限は「開始ボタンを押す」期限。ケース構造は**公式テキストの理解度チェック98問の実測で決着**＝共有ケース0件・1問完結・1問219字でサイト221字と同規模（＝長文化は不要）。詳細は docs/EXAM_STRUCTURE.md
 - [feedback_mobile_first_links.md](feedback_mobile_first_links.md) — HK はだいたい出先でスマホで読む。返答内のファイル案内は**GitHub の blob URL**で書く（相対パスはスマホで開けない）
+- [feedback_measure_before_concluding.md](feedback_measure_before_concluding.md) — 数える前にパースの正しさを検証する。母数の取りこぼしと単位の取り違えで2回続けて誤報告した実例つき
