@@ -5,7 +5,7 @@
 - [project_aicx_lab_build_ops.md](project_aicx_lab_build_ops.md) — 1セッション1Build の進め方と、別プロジェクト progress.md への追記が承認済みである範囲
 - [feedback_announce_before_work.md](feedback_announce_before_work.md) — 作業に入る前に「何をやるか」を一言伝えてから着手する（自律作業モードの部分上書き）
 - [project_aicx_lab_question_quality.md](project_aicx_lab_question_quality.md) — 作問Buildごとの機械チェック項目と閾値（長さ手がかり・型3順位語）。指標は「単独最長」で測る。第1〜7回は 2026-08-29 に是正済み
-- [project_aicx_lab_final_review_plan.md](project_aicx_lab_final_review_plan.md) — 再構築後の横断レビューは未実施で「諸々終わったらやる」。Fable を使う理由と、切替は HK 操作が必要なこと
+- [project_aicx_lab_final_review_plan.md](project_aicx_lab_final_review_plan.md) — R2 横断レビューは 2026-08-31 に Fable 8体で実施済み（高2・中10・低15）。Fable の価値の実測結論。closed
 - [project_aicx_lab_deadline_and_text.md](project_aicx_lab_deadline_and_text.md) — 学習開始 2026-09-01 が納期。公式テキストは受領・書き起こし済み。Sec27=5つの問い / Sec18=3層フレームワークで公式表現が確定
 - [project_official_text_ocr.md](project_official_text_ocr.md) — 公式テキスト401ページの書き起こしの所在・三重検証の到達点（欠陥ゼロ）・順序の保証と「png で原文確認してから直す」恒久ルール
 - [feedback_ocr_verification_method.md](feedback_ocr_verification_method.md) — 大量書き起こしの三重検証手順（二重キー入力＋機構の違うOCR）。総数一致を根拠にしない・検証スクリプト自体の循環論法を疑う
