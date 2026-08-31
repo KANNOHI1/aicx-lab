@@ -18,4 +18,4 @@
 - [feedback_js_duplicate_object_keys.md](feedback_js_duplicate_object_keys.md) — JS オブジェクトリテラルの重複キーは後勝ちで前が黙って消える。件数検査はユニーク件数と一致するかまで見る
 - [feedback_spawn_task_same_worktree.md](feedback_spawn_task_same_worktree.md) — spawn_task のチップは同じ作業ツリーの現ブランチへ直接コミットしうる。並行編集の衝突を前提に commit 直前で git log を確認する
 - [feedback_decompose_before_search.md](feedback_decompose_before_search.md) — 貪欲＋局所探索が頭打ちになったら、探索を足す前に「解く単位（分解）」を疑う
-- [project_aicx_lab_exam_facts.md](project_aicx_lab_exam_facts.md) — 本番の実態＝全50問75分・合格ライン非公開は公式明言・受験期限は「開始ボタンを押す」期限。ケース1件あたりの設問数は**公式非開示**で決着（受験者に聞いても出ない）
+- [project_aicx_lab_exam_facts.md](project_aicx_lab_exam_facts.md) — 本番の実態＝全50問75分・合格ライン非公開は公式明言・受験期限は「開始ボタンを押す」期限。ケース構造は**公式テキストの理解度チェック60問の実測で決着**＝共有ケース0件・1問完結・中央値391字（サイトは53字で300字超が0問）
