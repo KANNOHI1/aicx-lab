@@ -4,6 +4,7 @@ const fs = require('fs'), path = require('path');
 const ROOT = path.join(__dirname, '..');
 const SRC = path.join(ROOT, 'text_ocr', 'AICX_official_text.md');
 const OUT = path.join(ROOT, 'text_ocr', 'AICX_official_text.html');
+const OUT_ART = path.join(ROOT, 'text_ocr', 'AICX_official_text.artifact.html');
 const lines = fs.readFileSync(SRC, 'utf8').split(/\r?\n/);
 
 /* 第6章は Section 名でなくステップ名が見出しになっている（公式の構成）。番号へ対応づける */
@@ -12,6 +13,7 @@ const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&
 /* 太字とコードだけ通す。原文に生の HTML は無い */
 const inline = s => esc(s).replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>').replace(/`([^`]+)`/g, '<code>$1</code>');
 
+const NL = String.fromCharCode(10);
 const toc = [], out = [];
 let page = '', tbl = null, inCode = false, li = null, fig = null, callout = null;
 
@@ -124,11 +126,13 @@ flushCal();
 
 const tocHTML = toc.map(t => '<a href="#' + t.id + '"><b>' + t.n + '</b> ' + esc(t.title) + '</a>').join('');
 
-const CSS = [
-  ':root{--bg:#fbfaf8;--fg:#22201d;--dim:#7a746c;--line:#e4e0da;--card:#fff;--accent:#8a5a2b;--mark:#ffe08a;',
-  '  --bold:#7a3f10;--boldbg:rgba(138,90,43,.11);--ptbg:#fff6e6;--lpbg:#eef3f7;--lpline:#3d6b8f}',
-  '@media(prefers-color-scheme:dark){:root{--bg:#16181c;--fg:#e6e3de;--dim:#948d84;--line:#2c3038;--card:#1c1f24;--accent:#d9a05b;--mark:#6b5520;',
-  '  --bold:#f0c07a;--boldbg:rgba(217,160,91,.14);--ptbg:#241d12;--lpbg:#15202a;--lpline:#5b93bf}}',
+/* 明暗はトークンだけを差し替える。単体ファイルと Artifact で包み方が違うので分けておく */
+const T_LIGHT = '--bg:#fbfaf8;--fg:#22201d;--dim:#7a746c;--line:#e4e0da;--card:#fff;--accent:#8a5a2b;--mark:#ffe08a;'
+  + '--bold:#7a3f10;--boldbg:rgba(138,90,43,.11);--ptbg:#fff6e6;--lpbg:#eef3f7;--lpline:#3d6b8f';
+const T_DARK = '--bg:#16181c;--fg:#e6e3de;--dim:#948d84;--line:#2c3038;--card:#1c1f24;--accent:#d9a05b;--mark:#6b5520;'
+  + '--bold:#f0c07a;--boldbg:rgba(217,160,91,.14);--ptbg:#241d12;--lpbg:#15202a;--lpline:#5b93bf';
+
+const RULES = [
   '*{box-sizing:border-box}',
   'body{margin:0;background:var(--bg);color:var(--fg);font-family:-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif;line-height:1.92;font-size:var(--fs,17px);-webkit-text-size-adjust:100%}',
   '#bar{position:sticky;top:0;z-index:20;display:flex;gap:6px;align-items:center;padding:8px 10px;padding-top:calc(8px + env(safe-area-inset-top));background:var(--card);border-bottom:1px solid var(--line)}',
@@ -189,6 +193,13 @@ const CSS = [
   'mark.cur{outline:2px solid var(--accent)}'
 ].join('\n');
 
+/* 単体ファイル: OS の設定だけを見る */
+const CSS = ':root{' + T_LIGHT + '}\n@media(prefers-color-scheme:dark){:root{' + T_DARK + '}}\n' + RULES;
+/* Artifact: 閲覧側のテーマ切替が data-theme を立てるため、3状態すべてを書く */
+const CSS_ART = ':root{' + T_LIGHT + '}\n'
+  + '@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){' + T_DARK + '}}\n'
+  + ':root[data-theme="dark"]{' + T_DARK + '}\n' + RULES;
+
 const JS = [
   'var $=function(s){return document.querySelector(s)},doc=$("#doc");',
   '/* 目次は details なので開閉は JS 不要。行を選んだら閉じるところだけ補助する */',
@@ -222,16 +233,25 @@ const JS = [
   'if(!location.hash){var id=localStorage.getItem("aicx-txt-pos"),el=id&&document.getElementById(id);if(el)el.scrollIntoView()}'
 ].join('\n');
 
-const html = '<!doctype html><html lang="ja"><head>' +
-  '<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">' +
-  '<title>AICX 公式テキスト（私的閲覧用）</title><style>' + CSS + '</style></head><body>' +
-  '<div id="bar"><a class="lk" href="#toc">☰</a>' +
+/* 中身は単体ファイルと Artifact で共通。包み方だけが違う */
+const BODY = '<div id="bar"><a class="lk" href="#toc">☰</a>' +
   '<input id="q" type="search" placeholder="全文検索" enterkeyhint="search">' +
   '<span id="hits"></span><button id="prev">‹</button><button id="next">›</button><button id="fs">Aa</button></div>' +
   '<div class="pad"><details id="toc"><summary>目次（全' + toc.length + 'Section）</summary>' + tocHTML + '</details></div>' +
-  '<main id="doc">' + out.join('\n') + '</main>' +
-  '<script>' + JS + '</script></body></html>';
+  '<main id="doc">' + out.join(NL) + '</main>' +
+  '<script>' + JS + '</script>';
+
+const html = '<!doctype html><html lang="ja"><head>' +
+  '<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">' +
+  '<title>AICX 公式テキスト（私的閲覧用）</title><style>' + CSS + '</style></head><body>' + BODY + '</body></html>';
+
+/* Artifact は doctype/html/head/body を公開時に自分で被せる。title と style だけ先頭に置く */
+const artifact = '<title>AICX 公式テキスト</title>' +
+  '<style>' + CSS_ART + '</style>' + BODY;
+
+fs.writeFileSync(OUT_ART, artifact);
 
 fs.writeFileSync(OUT, html);
 console.log('生成:', OUT);
 console.log('Section 見出し ' + toc.length + ' 件 / ' + (fs.statSync(OUT).size / 1024 / 1024).toFixed(2) + ' MB');
+console.log('Artifact 用:', OUT_ART);
