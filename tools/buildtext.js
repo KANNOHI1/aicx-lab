@@ -135,10 +135,13 @@ const T_DARK = '--bg:#16181c;--fg:#e6e3de;--dim:#948d84;--line:#2c3038;--card:#1
 const RULES = [
   '*{box-sizing:border-box}',
   'body{margin:0;background:var(--bg);color:var(--fg);font-family:-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif;line-height:1.92;font-size:var(--fs,17px);-webkit-text-size-adjust:100%}',
-  '#bar{position:sticky;top:0;z-index:20;display:flex;gap:6px;align-items:center;padding:8px 10px;padding-top:calc(8px + env(safe-area-inset-top));background:var(--card);border-bottom:1px solid var(--line)}',
+  '#bar{position:sticky;top:0;z-index:20;transition:transform .2s ease;display:flex;gap:6px;align-items:center;padding:8px 10px;padding-top:calc(8px + env(safe-area-inset-top));background:var(--card);border-bottom:1px solid var(--line)}',
   '#bar button,#bar .lk{border:1px solid var(--line);background:transparent;color:var(--fg);border-radius:8px;padding:7px 10px;font-size:15px;flex:none;text-decoration:none;line-height:1}',
   '#q{flex:1;min-width:0;border:1px solid var(--line);background:var(--bg);color:var(--fg);border-radius:8px;padding:8px 10px;font-size:16px}',
   '#hits{font-size:12px;color:var(--dim);white-space:nowrap;flex:none}',
+  /* 読んでいる間は自分のバーを畳む。Artifact では上に閲覧枠が重なるため画面を返す */
+  '#bar.hid{transform:translateY(-105%)}',
+  '@media(prefers-reduced-motion:reduce){#bar{transition:none}}',
   /* 目次は details。JS が動かないビューア（ドライブ内蔵など）でも開ける */
   '.pad{padding:0 16px;max-width:760px;margin:0 auto}',
   '#toc{margin:12px 0 6px;border:1px solid var(--line);border-radius:10px;background:var(--card);overflow:hidden;scroll-margin-top:60px}',
@@ -225,6 +228,13 @@ const JS = [
   ' $("#hits").textContent=(hi+1)+"/"+hits.length}',
   'var t;$("#q").oninput=function(e){clearTimeout(t);var v=e.target.value.trim();t=setTimeout(function(){search(v)},250)};',
   '$("#next").onclick=function(){go(hi+1)};$("#prev").onclick=function(){go(hi-1)};',
+  '/* 下へ読み進むあいだはバーを畳む。上へ戻す・最上部・検索中は必ず出す */',
+  'var bar=$("#bar"),last=scrollY;',
+  'addEventListener("scroll",function(){var y=scrollY;',
+  ' if(y<80||y<last||document.activeElement===$("#q"))bar.classList.remove("hid");',
+  ' else if(y-last>6)bar.classList.add("hid");',
+  ' last=y},{passive:true});',
+  '$("#q").addEventListener("focus",function(){bar.classList.remove("hid")});',
   '/* 読み位置を覚えて次回そこから開く */',
   'var secs=[].slice.call(document.querySelectorAll("h2.sec"));',
   'addEventListener("scroll",function(){clearTimeout(window._s);window._s=setTimeout(function(){',
