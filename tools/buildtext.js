@@ -16,6 +16,9 @@ const inline = s => esc(s).replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>').replace(/`([
 const NL = String.fromCharCode(10);
 const toc = [], out = [];
 let page = '', tbl = null, inCode = false, li = null, fig = null, callout = null;
+/* 巻頭の CONTENTS（p3-4）は原本の目次。番号を本文の Section 見出しへ結ぶ。Prologue の 00/01 は Section でないので別 id */
+let contents = false, prologue = false;
+const PRO = { 'はじめに': 'pro0', '本テキストの読み方': 'pro1' };
 
 const closeTbl = () => { if (tbl) { out.push(tbl.join('') + '</table></div>'); tbl = null; } };
 const closeLi = () => { if (li) { out.push(li.join('') + '</ul>'); li = null; } };
@@ -64,12 +67,14 @@ for (const L of lines) {
     }
     if (/^正解$/.test(text)) { flushCal(); callout = '正解'; continue; }   // 「### 正解」も囲みと同じ扱い
     flushCal();
+    if (depth <= 2) contents = /^CONTENTS/.test(text);
+    if (contents && depth === 3) prologue = /^Prologue/.test(text);
     if (/^CHAPTER/i.test(text)) continue;                      // 章の柱（Section の途中に挟まるため出さない）
     const band = text.match(/^(\d)[\s　.]*(.+)$/);             // 「1 知識」「3 理解度チェック」＝Section 共通の骨格
     if (band) { out.push('<h3 class="band"><span class="bn">' + esc(band[1]) + '</span>' + inline(band[2]) + '</h3>'); continue; }
     if (/^問\s*\d/.test(text)) { out.push('<h4 class="qz">' + inline(text) + '</h4>'); continue; }
     const lv = Math.min(depth + 1, 5);
-    out.push('<h' + lv + ' class="h">' + inline(text) + '</h' + lv + '>');
+    out.push('<h' + lv + ' class="h"' + (PRO[text] ? ' id="' + PRO[text] + '"' : '') + '>' + inline(text) + '</h' + lv + '>');
     continue;
   }
 
@@ -97,7 +102,9 @@ for (const L of lines) {
   const lm = L.match(/^\s*(?:[-・]\s+|\*\s+|\d+[.、　]\s*)(.+)$/);
   if (lm) {
     if (fig) { fig.push('<div class="fl">' + inline(lm[1]) + '</div>'); continue; }
-    if (!li) li = ['<ul>']; li.push('<li>' + inline(lm[1]) + '</li>'); continue;
+    const cm = contents && lm[1].match(/^(\d\d)[\s　]+(.+)$/);   // 巻頭目次の「19　自動化レベル…」
+    const body = cm ? '<a href="#' + (prologue ? 'pro' + Number(cm[1]) : 'sec' + Number(cm[1])) + '">' + inline(lm[1]) + '</a>' : inline(lm[1]);
+    if (!li) li = ['<ul>']; li.push('<li>' + body + '</li>'); continue;
   }
   closeLi();
   closeFig();
@@ -155,6 +162,9 @@ const RULES = [
   'main{padding:0 16px calc(60px + env(safe-area-inset-bottom));max-width:760px;margin:0 auto}',
   /* 見出しの段階を明確に分ける。拾い読みの足場になる */
   'h2.sec{margin:40px 0 14px;padding-top:12px;border-top:3px solid var(--accent);font-size:1.32em;line-height:1.45;scroll-margin-top:56px}',
+  /* 巻頭目次のリンク先。固定バーの下に潜らないよう見出しに余白 */
+  '#doc a{color:var(--accent);text-decoration:underline;text-underline-offset:3px}',
+  '#doc .h{scroll-margin-top:56px}',
   '.secn{display:block;font-size:.6em;color:var(--accent);letter-spacing:.1em;font-weight:700}',
   '.pg{float:right;font-size:.52em;color:var(--dim);font-weight:400}',
   '.h{margin:26px 0 8px;font-size:1.06em;line-height:1.55;padding-left:.6em;border-left:3px solid var(--line)}',
