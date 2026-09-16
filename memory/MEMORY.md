@@ -21,3 +21,4 @@
 - [project_aicx_lab_exam_facts.md](project_aicx_lab_exam_facts.md) — 本番の実態＝全50問75分・合格ライン非公開は公式明言・受験期限は「開始ボタンを押す」期限。ケース構造は**公式テキストの理解度チェック98問の実測で決着**＝共有ケース0件・1問完結・1問219字でサイト221字と同規模（＝長文化は不要）。詳細は docs/EXAM_STRUCTURE.md
 - [feedback_mobile_first_links.md](feedback_mobile_first_links.md) — HK はだいたい出先でスマホで読む。返答内のファイル案内は**GitHub の blob URL**で書く（相対パスはスマホで開けない）
 - [feedback_measure_before_concluding.md](feedback_measure_before_concluding.md) — 数える前にパースの正しさを検証する。母数の取りこぼしと単位の取り違えで2回続けて誤報告した実例つき
+- [大きな Artifact の再公開は新 URL に倒す](feedback_artifact_large_republish.md) — 同 URL 更新は全文 Read 必須。数百 KB 級は新 URL 公開が既定
