@@ -11,7 +11,7 @@
 - **教材側にやり残しはなく、HK の学習フェーズ**。全14回・QB246問・模試3セットが公開済み。**受験申込の締切 9/20 が目前**
 - **2026-08-31 HK 判断＝学習を優先し、長文化は模試③（25問）だけに限定して10月着手**（Build G3 として進行表に予約済み）
 - サイト作業の一次資料は [docs/EXAM_STRUCTURE.md](docs/EXAM_STRUCTURE.md) と [docs/REVIEW_FINDINGS.md](docs/REVIEW_FINDINGS.md)、進行表は BUILD_PLAN.md、各回の設計は DESIGN.md §4
-- 最新リモート同期: 2026-09-16 23:03 JST — ahead 2 commits (62e2578, 81b9708) → push 未実施
+- 最新リモート同期: 2026-09-16 23:03 JST — origin/main = HEAD (ahead 0 / behind 0)
 
 ## 次にやること
 
@@ -117,4 +117,4 @@
 - 2026-08-31 [Claude] Build G2（R2 の高2＋中10 を修正・低15 を裁定）と、本番の出題構造の調査。公式98問の実測で**長文化は不要**と判明し（サイトと同規模）、代わりに本番で効く手がかりを第14回へ TIPS 掲載。受験期限の意味と合格ライン非開示を公式で確定。HK 判断で学習優先・長文化は模試③のみ（G3・10月）。**監督の計測ミス2回**（母数の取りこぼし・単位の取り違え）は EXAM_STRUCTURE の訂正の記録と memory へ。commit 317b121 / 68c2c51 / 638df44 / 0fca197 / 3d7da59 / 7c9eb5f
 - 2026-09-01 [Claude] Build G4。HK が外出先で公式テキストを読めず発覚。ホームに Drive リンクのカードを追加し、閲覧用 HTML の組版を刷新。**POINT の囲みが一度も出ていなかった**（検出条件が原文の `**POINT**` 形式と不一致）のを修正し囲み184・正解37 を復元。目次と正解を `<details>` にして JS 非依存化。骨格を帯・図を1枠・太字に色・柱27行を除去。commit 1bfcded / 38f106d
 - 2026-09-02 [Claude] Build G5。iPhone のドライブアプリに「ブラウザで開く」が無いと判明し、A（PDF 化）と B（Artifact 公開）を提示して **HK が B を選択**。`tools/buildtext.js` の CSS をトークンと規則に分け、Artifact 版は doctype/head/body を出さず `data-theme` 明示2状態 + OS 設定の3状態を定義。3状態とも計算値で確認。複製物の置き場所の決定を3箇所へ更新（**公開リポジトリと Pages は引き続き禁止・Artifact は共有しない**）。commit d83896e
-- 2026-09-16 [Claude] Build G6。HK が iPhone の Artifact で巻頭 CONTENTS から飛べないと指摘。`buildtext.js` で目次行を Section 見出しへリンク化（Prologue は pro0/1）、ローカルで着地位置を確認。旧 Artifact の上書きは 805KB の全文読込が要るため HK 判断で新 URL に公開。Drive 側は HK が手動上書き。commit 62e2578 / 81b9708（push 未）
+- 2026-09-16 [Claude] Build G6。HK が iPhone の Artifact で巻頭 CONTENTS から飛べないと指摘。`buildtext.js` で目次行を Section 見出しへリンク化（Prologue は pro0/1）、ローカルで着地位置を確認。旧 Artifact の上書きは 805KB の全文読込が要るため HK 判断で新 URL に公開。Drive 側は HK が手動上書き。commit 62e2578 / 81b9708
