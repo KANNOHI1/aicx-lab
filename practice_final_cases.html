@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>本番形式 仕上げ演習 — 共有ケース2本</title>
+<style>
+:root{
+  --bg:#f6f7f9; --panel:#ffffff; --ink:#15181d; --sub:#5b6472; --line:#dfe3e9;
+  --accent:#1f5fd6; --accent-weak:#e8effc; --ok:#17794a; --ok-weak:#e6f4ec;
+  --ng:#b3261e; --ng-weak:#fbeae9; --flag:#b26a00; --flag-weak:#fdf1dd;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#15181d; --panel:#1d2127; --ink:#e9ecf1; --sub:#9aa4b2; --line:#2f353e;
+    --accent:#7aa6f0; --accent-weak:#1d2a3f; --ok:#6ed19b; --ok-weak:#17301f;
+    --ng:#f08e86; --ng-weak:#32191a; --flag:#e0b05f; --flag-weak:#2e2515;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#15181d; --panel:#1d2127; --ink:#e9ecf1; --sub:#9aa4b2; --line:#2f353e;
+  --accent:#7aa6f0; --accent-weak:#1d2a3f; --ok:#6ed19b; --ok-weak:#17301f;
+  --ng:#f08e86; --ng-weak:#32191a; --flag:#e0b05f; --flag-weak:#2e2515;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg); color:var(--ink);
+  font-family:-apple-system,"Segoe UI","Hiragino Kaku Gothic ProN","Yu Gothic UI",Meiryo,sans-serif;
+  font-size:15px; line-height:1.75; -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1180px;margin:0 auto;padding:24px 16px 72px}
+h1{font-size:1.45rem;line-height:1.4;margin:0 0 6px}
+h2{font-size:1.1rem;margin:28px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+h3{font-size:.98rem;margin:18px 0 6px}
+p{margin:0 0 10px}
+.lede{color:var(--sub);font-size:.92rem;margin-bottom:18px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:18px 20px;margin:0 0 16px}
+table{border-collapse:collapse;width:100%;font-size:.88rem;margin:10px 0 14px}
+th,td{border:1px solid var(--line);padding:6px 9px;text-align:left;vertical-align:top}
+th{background:var(--accent-weak);font-weight:600}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+button{font:inherit;cursor:pointer;border-radius:8px;border:1px solid var(--line);background:var(--panel);color:var(--ink);padding:9px 16px}
+button:hover{border-color:var(--accent)}
+button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+button.primary:hover{opacity:.9}
+button:disabled{opacity:.45;cursor:default}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.sp{flex:1}
+.muted{color:var(--sub);font-size:.86rem}
+.hide{display:none !important}
+
+/* exam layout */
+.bar{position:sticky;top:0;z-index:5;background:var(--panel);border:1px solid var(--line);
+  border-radius:10px;padding:10px 14px;margin-bottom:14px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.timer{font-variant-numeric:tabular-nums;font-weight:700;font-size:1.05rem;padding:2px 10px;border-radius:6px;background:var(--accent-weak);color:var(--accent)}
+.timer.warn{background:var(--flag-weak);color:var(--flag)}
+.timer.over{background:var(--ng-weak);color:var(--ng)}
+.split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:start}
+.casepane{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px 18px;
+  max-height:calc(100vh - 110px);overflow:auto;position:sticky;top:70px}
+.casepane h3:first-child{margin-top:0}
+.qpane{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px 18px}
+.qhead{display:flex;gap:10px;align-items:baseline;margin-bottom:8px}
+.qno{font-weight:700;color:var(--accent)}
+.qtext{margin:0 0 14px}
+.opts{display:flex;flex-direction:column;gap:8px;margin-bottom:16px}
+.opt{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);border-radius:8px;padding:10px 12px;cursor:pointer}
+.opt:hover{border-color:var(--accent)}
+.opt.sel{border-color:var(--accent);background:var(--accent-weak)}
+.opt input{margin:5px 0 0}
+.opt .lab{font-weight:700;min-width:1.1em}
+.nav{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.grid{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 0}
+.cell{width:38px;height:34px;border:1px solid var(--line);border-radius:6px;display:flex;
+  align-items:center;justify-content:center;font-size:.82rem;cursor:pointer;background:var(--panel)}
+.cell.done{background:var(--accent-weak);border-color:var(--accent);color:var(--accent);font-weight:700}
+.cell.flagged{background:var(--flag-weak);border-color:var(--flag);color:var(--flag);font-weight:700}
+.cell.cur{outline:2px solid var(--ink);outline-offset:1px}
+.res{border-left:4px solid var(--line);padding:2px 0 2px 14px;margin:0 0 20px}
+.res.ok{border-color:var(--ok)}
+.res.ng{border-color:var(--ng)}
+.tag{display:inline-block;font-size:.76rem;padding:1px 8px;border-radius:99px;border:1px solid var(--line);color:var(--sub);margin-right:6px}
+.tag.ok{background:var(--ok-weak);color:var(--ok);border-color:transparent}
+.tag.ng{background:var(--ng-weak);color:var(--ng);border-color:transparent}
+.score{font-size:2rem;font-weight:800;font-variant-numeric:tabular-nums}
+.chk{list-style:none;padding:0;margin:0}
+.chk li{border-bottom:1px solid var(--line);padding:9px 0}
+.chk li:last-child{border-bottom:0}
+.kbd{font-size:.8rem;border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;padding:0 5px}
+@media (max-width:860px){
+  .split{grid-template-columns:1fr}
+  .casepane{position:static;max-height:420px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- ================= START ================= -->
+<section id="start">
+  <h1>本番形式 仕上げ演習 — 共有ケース2本（20問）</h1>
+  <p class="lede">第1回の結果画面で判明した本番構成（基礎7問＋ケース4本×10問＋発展/時事3問）のうち、<b>ケース2本分</b>を本番と同じ形で再現した演習です。サイトの問題バンクとは独立で、重複はありません。</p>
+
+  <div class="card">
+    <h3 style="margin-top:0">本番との対応</h3>
+    <table>
+      <tr><th>項目</th><th>本番（第2回・推定）</th><th>この演習</th></tr>
+      <tr><td>形式</td><td>1本のケース本文＋データ表に小問8〜10問</td><td>同じ（10問×2本）</td></tr>
+      <tr><td>配点</td><td>1問2点・ケース4本で80点</td><td>1問2点・40点満点</td></tr>
+      <tr><td>時間</td><td>ケース1本あたり約19分</td><td>1本19分 / 通し38分</td></tr>
+      <tr><td>計算問題</td><td>出る（電卓・紙は不可）</td><td>各ケースに1問</td></tr>
+      <tr><td>フラグ</td><td>あり（迷ったら2択に絞って先へ）</td><td>あり</td></tr>
+    </table>
+    <p class="muted">タイマーは参考表示で、超過しても強制終了しません。本番の練習としては<b>超過した時点を記録して先へ進む</b>のが正しい使い方です。電卓・紙のメモは本番で禁止なので、暗算でやってください。</p>
+  </div>
+
+  <div class="card">
+    <h3 style="margin-top:0">出題範囲</h3>
+    <table>
+      <tr><th>ケース</th><th>題材</th><th>主な論点</th></tr>
+      <tr><td><b>ケース1</b></td><td>中堅精密機器メーカーの受注処理</td><td>業務構造とIPO / As-Is分析 / ECRS / 可視化4手法 / HTA / 自動化レベル / トリガー / AI適合性 / 優先順位 / 工数試算</td></tr>
+      <tr><td><b>ケース2</b></td><td>地域金融機関のコールセンター</td><td>データ3分類 / RAGの2フェーズ / 精度の切り分け / メタデータ / 成功の3層 / 定着の4分類 / PoCの測定 / 推進体制 / チェンジマネジメント / 効果試算</td></tr>
+    </table>
+  </div>
+
+  <div class="row">
+    <button class="primary" onclick="begin('both')">通しで解く（38分・20問）</button>
+    <button onclick="begin(0)">ケース1だけ（19分・10問）</button>
+    <button onclick="begin(1)">ケース2だけ（19分・10問）</button>
+    <div class="sp"></div>
+    <button onclick="jumpChecklist()">本番チェックリストを見る</button>
+  </div>
+</section>
+
+<!-- ================= EXAM ================= -->
+<section id="exam" class="hide">
+  <div class="bar">
+    <span class="timer" id="timer">19:00</span>
+    <span class="muted" id="progress"></span>
+    <div class="sp"></div>
+    <button id="flagBtn" onclick="toggleFlag()">フラグ</button>
+    <button onclick="showReview()">見直し一覧</button>
+    <button class="primary" onclick="finish()">採点する</button>
+  </div>
+  <div class="split">
+    <div class="casepane" id="casepane"></div>
+    <div>
+      <div class="qpane">
+        <div class="qhead"><span class="qno" id="qno"></span><span class="muted" id="qmeta"></span></div>
+        <p class="qtext" id="qtext"></p>
+        <div class="opts" id="opts"></div>
+        <div class="nav">
+          <button onclick="go(-1)" id="prevBtn">← 前の問</button>
+          <button class="primary" onclick="go(1)" id="nextBtn">次の問 →</button>
+          <span class="muted">選択肢は <span class="kbd">1</span>–<span class="kbd">4</span>、移動は <span class="kbd">←</span><span class="kbd">→</span></span>
+        </div>
+      </div>
+      <div class="card" id="reviewBox" style="display:none">
+        <h3 style="margin-top:0">見直し一覧</h3>
+        <div class="grid" id="reviewGrid"></div>
+        <p class="muted" style="margin-top:12px">青＝回答済み／橙＝フラグ／白＝未回答。クリックでその問へ移動します。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= RESULT ================= -->
+<section id="result" class="hide">
+  <h1>採点結果</h1>
+  <div class="card">
+    <div class="row" style="align-items:flex-end;gap:24px">
+      <div>
+        <div class="muted">得点（1問2点）</div>
+        <div class="score" id="scoreVal">—</div>
+      </div>
+      <div>
+        <div class="muted">正答率</div>
+        <div class="score" id="rateVal">—</div>
+      </div>
+      <div>
+        <div class="muted">本番80点換算（ケース4本分）</div>
+        <div class="score" id="convVal">—</div>
+      </div>
+      <div>
+        <div class="muted">所要時間</div>
+        <div class="score" id="timeVal">—</div>
+      </div>
+    </div>
+    <p class="muted" id="verdict" style="margin:14px 0 0"></p>
+  </div>
+
+  <h2>弱点の内訳</h2>
+  <div class="card" id="weakBox"></div>
+
+  <h2>設問ごとの解説</h2>
+  <div id="explain"></div>
+
+  <div class="row">
+    <button class="primary" onclick="location.reload()">もう一度</button>
+    <button onclick="jumpChecklist()">本番チェックリストへ</button>
+  </div>
+</section>
+
+<!-- ================= CHECKLIST ================= -->
+<section id="checklist" class="hide">
+  <h1>本番チェックリスト</h1>
+  <p class="lede">10/29 当日に見る用。前提は STATUS.md と memory/project_aicx_lab_exam_facts.md の確定事項です。</p>
+
+  <h2>1. 時間配分（90分）</h2>
+  <div class="card">
+    <table>
+      <tr><th>区間</th><th>内容</th><th class="num">配分</th><th class="num">経過</th></tr>
+      <tr><td>①</td><td>基礎7問</td><td class="num">5分</td><td class="num">5分</td></tr>
+      <tr><td>②</td><td>ケース1（10問）</td><td class="num">19分</td><td class="num">24分</td></tr>
+      <tr><td>③</td><td>ケース2（10問）</td><td class="num">19分</td><td class="num">43分</td></tr>
+      <tr><td>④</td><td>ケース3（10問）</td><td class="num">19分</td><td class="num">62分</td></tr>
+      <tr><td>⑤</td><td>ケース4（10問）</td><td class="num">19分</td><td class="num">81分</td></tr>
+      <tr><td>⑥</td><td>発展/時事3問</td><td class="num">3分</td><td class="num">84分</td></tr>
+      <tr><td>⑦</td><td>フラグの見直し</td><td class="num">5分</td><td class="num">89分</td></tr>
+    </table>
+    <ul>
+      <li><b>区切り時刻を先に決めておく</b>（24 / 43 / 62 / 81分）。超えたら読み切っていなくても次のケースへ移る。</li>
+      <li>1問の上限は<b>90秒</b>。超えたら2択に絞ってフラグを立て、次へ。</li>
+      <li>ケース本文は<b>設問を先に見てから読む</b>。本文には使わない情報（ステークホルダーの懸念・経緯）が混ざる。</li>
+    </ul>
+  </div>
+
+  <h2>2. 選択肢の切り方（公式98問の実測に基づく）</h2>
+  <div class="card">
+    <ul>
+      <li><b>「すべて」「必ず」「一切」「完全に」を含む肢は切る。</b>公式の正解肢にこの種の断定は0件。</li>
+      <li><b>例外は不可逆操作。</b>「送信・決済・公開の前は必ず人が承認する」型は正解になりうる。</li>
+      <li><b>迷ったら長い肢。</b>公式の正解は「結論＋理由」で書かれるため単独で最長になりやすい（公式62%）。ただしこの演習とサイトの問題は手がかりを意図的に削っているので、本番だけで効く。</li>
+      <li><b>「記述自体は正しいが設問の条件に合わない」肢が最大の罠。</b>消去法が効かない。設問が聞いているのは「最初に」「最も優先して」「この段階で」のどれなのかを読み直す。</li>
+      <li>順序を問う問題は<b>先頭の1つだけ</b>合っているかで判定する（As-Is→To-Be→ギャップ、効果→定着→精度）。</li>
+    </ul>
+  </div>
+
+  <h2>3. 取り違えやすい対概念（直前に目を通す）</h2>
+  <div class="card">
+    <table>
+      <tr><th>論点</th><th>見分ける鍵</th></tr>
+      <tr><td>Lv.2 / Lv.3</td><td>AIが自ら動き出すか＋外部システムと連携するか</td></tr>
+      <tr><td>Lv.3 / Lv.4</td><td><b>フローの構造自体をAIが作ったか</b>。人が事前設計していればLv.3</td></tr>
+      <tr><td>イベントトリガー / Webhook</td><td>変化を検知する主体。ワークフロー側が見張る＝イベント、外部が通知＝Webhook</td></tr>
+      <tr><td>IPO・SIPOC / HTA・業務フロー図</td><td>相手が経営層か現場か。役割分担を詰めるならHTA</td></tr>
+      <tr><td>定義の順序 / 達成の順序</td><td>定義は効果→定着→精度（トップダウン）、達成は精度→定着→効果（ボトムアップ）</td></tr>
+      <tr><td>検索精度 / 生成精度</td><td>欲しいチャンクが取れていないのか、取れているのに回答に反映されていないのか</td></tr>
+      <tr><td>中央集権型 / 分散型</td><td>一方の強みはそのまま他方の弱み（逆転関係）</td></tr>
+      <tr><td>心理的安全性</td><td>居心地の良さではない。厳しい指摘が活発に出る状態</td></tr>
+      <tr><td>Fail-Fast</td><td>無計画な失敗ではない。仮説と検証設計が前提</td></tr>
+      <tr><td>抵抗曲線の「谷」</td><td>異常ではなく通常の反応。谷を見て中止するのが失敗</td></tr>
+    </table>
+  </div>
+
+  <h2>4. 運用（試験環境）</h2>
+  <div class="card">
+    <ul>
+      <li>期限は<b>「開始ボタンを押す」期限</b>。10/31 23:59までに押せば90分は日をまたいでよい。</li>
+      <li>一時停止は不可。<b>ブラウザを閉じても時間は進む</b>。復帰（開始ボタン押下）は通算3回まで。</li>
+      <li>Chrome または Edge の最新版。Safari・Firefox は対象外。<b>スリープを切っておく</b>。</li>
+      <li>Webカメラは不要（WisdomBase の表示が正）。ポップアップは許可しておく。</li>
+      <li><b>紙のメモ・電卓・公式テキスト・検索はすべて不可。</b>計算は暗算。</li>
+      <li>タブ・ウィンドウの切替は履歴が残る。<b>試験中は他のタブを開かない。</b></li>
+    </ul>
+  </div>
+
+  <div class="row"><button class="primary" onclick="location.reload()">先頭へ戻る</button></div>
+</section>
+
+</div>
+
+<script>
+/* =========================================================
+   データ：ケース本文 2本 + 設問 20問
+   ========================================================= */
+const CASES = [
+{
+  title: "ケース1：東海精密機器の受注処理",
+  html: `
+<h3>ケース1　東海精密機器株式会社</h3>
+<p><b>会社概要</b>　産業用センサーの設計・製造。従業員 420名。国内の装置メーカー約180社と継続取引があり、受注は得意先ごとにフォーマットの異なる発注書（PDF）がメール添付で届く。受注処理は営業管理課の4名が担当している。</p>
+
+<p><b>現状の受注処理（担当者の作業を実際に観察して記録したもの）</b></p>
+<table>
+  <tr><th>工程</th><th>内容</th><th class="num">1件あたり</th><th class="num">月間</th></tr>
+  <tr><td>①</td><td>受信メールから添付PDFを取得し、共有フォルダへ保存する</td><td class="num">3分</td><td class="num">60時間</td></tr>
+  <tr><td>②</td><td>発注書PDFから品目・数量・希望納期を読み取り、受注システムへ転記する</td><td class="num">9分</td><td class="num">180時間</td></tr>
+  <tr><td>③</td><td>与信枠と在庫をそれぞれのシステムで照会する</td><td class="num">4分</td><td class="num">80時間</td></tr>
+  <tr><td>④</td><td>納期と採算を踏まえて受注可否を判断する</td><td class="num">2分</td><td class="num">40時間</td></tr>
+  <tr><td>⑤</td><td>課長への社内承認依頼メールを作成・送付する</td><td class="num">3分</td><td class="num">60時間</td></tr>
+  <tr><td>⑥</td><td>別の担当者が全件を目視で再照合する（二重チェック）</td><td class="num">4分</td><td class="num">80時間</td></tr>
+  <tr><td colspan="2"><b>合計</b></td><td class="num"><b>25分</b></td><td class="num"><b>500時間</b></td></tr>
+</table>
+<p class="muted">月間受注件数 1,200件。担当4名で月間 500時間を要している。</p>
+
+<p><b>把握している事実</b></p>
+<ul>
+  <li>⑥の二重チェックは8年前の大口誤納期事故の後に全件対象で始まった。直近2年の指摘率は0.4%で、指摘の9割は②の転記ミスである。</li>
+  <li>業務マニュアルでは③の与信照会は②の前に行う手順になっているが、実際には全員が②の後に行っている。理由を尋ねたが「前任からこうだった」以上の説明は出なかった。</li>
+  <li>発注書のフォーマットは得意先ごとに異なり、品目名の表記も統一されていない。</li>
+  <li>与信枠と在庫は基幹システムのテーブルに数値で保持されており、APIでの照会が可能である。</li>
+  <li>受注システムには、案件ステータスが変更されたことを外部へ通知する機能がない。受注システムのDBは参照できる。</li>
+  <li>月末3営業日は受注件数が平常月の2.4倍に増え、処理が翌日に繰り越されている。</li>
+</ul>
+
+<p><b>関係者の発言</b></p>
+<ul>
+  <li>営業管理課長：「転記の負担を減らしたい。ただし受注可否の判断を機械に任せるのは認められない」</li>
+  <li>情報システム課：「基幹システムのAPIは提供できる。新しいツールの選定は全社基準に合わせてほしい」</li>
+  <li>担当者（勤続14年）：「自分の仕事がなくなるなら協力しにくい」</li>
+  <li>経営層：「3ヶ月以内に目に見える成果が欲しい」</li>
+</ul>
+`,
+  qs: [
+  {
+    q: "東海精密機器の受注処理について、AIエージェント導入の対象として特定すべき単位の説明として、最も適切なものはどれか。",
+    o: [
+      "「受注処理」という業務全体をひとつの単位として置き換える対象に設定する。得意先ごとの差異は導入後に個別調整する。",
+      "業務全体をIPOで整理し、そのうえでProcessに含まれる個々の作業を特定して、どの作業にAIエージェントを適用するかを判断する。",
+      "Input・Process・Outputのうち最も時間のかかっているInputの工程を特定し、そこを対象にする。",
+      "「産業用センサーの安定供給」という仕事のレベルで目的を定義し、その達成に必要な作業をすべて自動化の対象にする。"
+    ],
+    a: 1,
+    src: "Section9 業務の構造的理解",
+    exp: "IPOは業務全体の輪郭をつかむための見方で、AIエージェントが直接置き換える対象はその中の<b>作業</b>です。Aは業務単位では粗すぎます。Cは本ケースのInput（発注書の受信）は3分で最長ではなく、そもそもIPOは「どこが長いか」を決めるための枠組みではありません。Dの「仕事」は目的・役割のレベルで、置き換え対象になりません。"
+  },
+  {
+    q: "マニュアルでは与信照会（③）が転記（②）の前とされているが、実際には全員が②の後に行っており、理由を説明できる担当者がいなかった。この発見の扱い方として、最も適切なものはどれか。",
+    o: [
+      "マニュアルが正しい手順なので、As-Isにはマニュアル上の順序を記録し、現場の運用は逸脱として是正する。",
+      "理由を説明できない工程なので、As-Isの記録から除外し、To-Beでも扱わない。",
+      "差分そのものを事実として記録する。理由が説明できない点は、AI化より前に廃止や順序変更を検討する候補として扱う。",
+      "順序の違いは効果に影響しないため記録は省き、②の転記時間の削減に集中する。"
+    ],
+    a: 2,
+    src: "Section9 As-Is分析（5W1HのWhy／マニュアルと実態の差分）",
+    exp: "As-Isは事実をそのまま記録する段階で、マニュアルと実態の差分は最も価値のある発見です。「なぜこの手順があるか」を答えられない工程は、かつて必要だったが意味を失っている可能性が高く、AI化の前に廃止・順序変更を検討する候補になります。Aはマニュアルを実態より優先しており、As-Isの原則から外れます。Bは事実の記録を落としています。"
+  },
+  {
+    q: "⑥の二重チェック（月間80時間・指摘率0.4%・指摘の9割は②の転記ミス）について、To-Be設計での扱いとして最も適切なものはどれか。",
+    o: [
+      "二重チェックの工程をそのまま残し、再照合の作業をAIエージェントに担わせて80時間を削減する。",
+      "②の転記をAI化すればミスは発生しなくなるため、⑥は不要となり、無条件に廃止する。",
+      "過去の事故を踏まえ、二重チェックは全件のまま維持する。削減対象は①③⑤に限定する。",
+      "ECRSのEliminateとして必要性を問い直し、②のAI化で誤りの発生源が変わる点を踏まえ、全件照合を縮小できないか検討する。"
+    ],
+    a: 3,
+    src: "Section10 BPR（ECRS）／Section9 To-Be分析",
+    exp: "ECRSを先に適用し、不要な工程をAIで自動化するという失敗を避けるのが原則です。⑥は②の転記ミスを捕まえるための工程なので、②の担い手が変われば必要な量も変わります。Aは「不要かもしれない工程をAIで自動化する」最も避けるべき形。BはLLMの出力が確率的であることを無視した断定で、HITLの設計が消えます。Cは事実（指摘率0.4%）を検討に使っていません。"
+  },
+  {
+    q: "可視化の進め方について、経営層への説明と、現場担当者とのAI・人の役割分担の詰めを、それぞれどの手法で行うのが適切か。",
+    o: [
+      "経営層にはIPOとSIPOC、現場にはHTAと業務フロー図を用いる。",
+      "経営層にはHTAと業務フロー図、現場にはIPOとSIPOCを用いる。",
+      "いずれの相手にも4手法すべてを順番に適用し、同じ資料を共有する。",
+      "経営層には業務フロー図のみ、現場にはSIPOCのみを用いる。"
+    ],
+    a: 0,
+    src: "Section11 業務可視化の手法（4つの使い分け）",
+    exp: "IPOは業務の輪郭、SIPOCは関係者の整理で、いずれも経営層向け。HTAは役割分担の設計、業務フロー図は現場との認識統合に向きます。4手法を順番に全部やる必要はなく、目的と対象者で選ぶのが実務です。"
+  },
+  {
+    q: "受注処理をHTAでアトミック・タスクに分解したうえでの担当の割り当てとして、最も適切な組み合わせはどれか。",
+    o: [
+      "①＝AIエージェント、②＝定型処理、④＝AIエージェント",
+      "①＝定型処理、②＝AIエージェント、④＝人間",
+      "①＝人間、②＝AIエージェント、④＝定型処理",
+      "①②④のすべてをAIエージェントに割り当て、誤りは⑥の二重チェックで吸収する"
+    ],
+    a: 1,
+    src: "Section11 HTA（3分類）",
+    exp: "①のメール添付の取得・保存は判断を伴わない機械的操作なので定型処理。②はフォーマットも表記も不統一な非構造化データの読み取りで、文脈に応じた解釈が要るためAI。④の受注可否は採算と納期を踏まえた責任を伴う判断で、課長も機械に委ねないと明言しているため人間。Dは誤りの発生を後工程の目視に依存する設計で、削減の目的と矛盾します。"
+  },
+  {
+    q: "検討の結果、「受注システムのステータスが『受注確認中』に変わったことを起点に、与信・在庫の照会、発注書の読み取り、承認依頼メールの下書き生成、担当者への通知までを、あらかじめ設計した順序で実行する」設計に決まった。各ステップの順序とロジックは人が事前に設計し、AIは読み取りと分類を担う。この設計の自動化レベルはどれか。",
+    o: [
+      "Lv.2。AIが担うのは読み取りと分類だけで、処理全体を自律的に遂行していないため。",
+      "Lv.3。処理の順序とロジックを人が事前設計しており、トリガーをきっかけに外部システムと連携して自動実行されるため。",
+      "Lv.4。人の問いかけを待たずにAIが処理を開始し、複数のシステムをまたいで実行されるため。",
+      "Lv.4。ステータス変化という想定外の事象にAIが対応して動くため。"
+    ],
+    a: 1,
+    src: "Section19 自動化レベル（レベルの境界線）",
+    exp: "Lv.3とLv.4を分ける決め手は<b>フローの構造自体をAIが作ったか</b>です。本設計は順序とロジックを人が事前設計しているためLv.3（電車）。Aは「自ら動き出し、外部システムと連携する」点を見落としており、ここがLv.2との境界です。C・Dは自動で動き出すことをLv.4の根拠にしていますが、それはLv.3の条件です。"
+  },
+  {
+    q: "上記ワークフローの起動方法について、ケースの事実を踏まえた判断として最も適切なものはどれか。",
+    o: [
+      "受注システムに外部通知の機能がないため、Webhookで受注システムから通知を受け取る設計にする。",
+      "受注システムのDBを参照して状態変化を検知するイベントトリガーを用いる。外部システム側から通知を送るWebhookは、通知機能がない本ケースでは選べない。",
+      "月末3営業日に負荷が集中するため、月末のみ手動実行とし、平常月はスケジュール実行で毎朝まとめて処理する。",
+      "閾値トリガーを用い、未処理の受注件数が一定数を超えたときにワークフローを起動する。"
+    ],
+    a: 1,
+    src: "Section20 トリガー設計（イベントトリガーとWebhookの違い）",
+    exp: "両者の違いは<b>変化を検知する主体</b>です。ワークフロー側が対象システムを確認するのがイベントトリガー、外部システム側が通知を送るのがWebhook。本ケースは受注システムに通知機能がなくDBは参照できるので、イベントトリガーが適します。Aは事実と矛盾。C・Dは起動方式としては成立しますが、1件ごとの即時処理が要件である本ケースでは処理の遅延を生み、月末の繰り越しという課題を解きません。"
+  },
+  {
+    q: "To-Beとして、①③⑤を定型処理で自動化し、②はAIが読み取って担当者が1件2分で確認する形に変更し、⑥は全件照合から10%の抜き取り照合に縮小する。④は従来どおり人が担う。月間500時間はおよそどれだけ削減されるか。",
+    o: [
+      "約340時間",
+      "約412時間",
+      "約452時間",
+      "約500時間"
+    ],
+    a: 1,
+    src: "Section9 To-Be分析（KPIとのひも付け）／Section6 導入価値",
+    exp: "①60→0、③80→0、⑤60→0。②は180→1,200件×2分÷60＝40時間（140時間削減）。⑥は80→10%の8時間（72時間削減）。④は40時間のまま。残存＝40＋40＋8＝88時間、削減＝500−88＝<b>412時間</b>（約82%）。340時間は⑥の縮小分72時間を数え落とした値、452時間は②の確認40時間を引き忘れた値、500時間は人が担うと決めた④まで削減に含めた値です。"
+  },
+  {
+    q: "東海精密機器では、受注処理のほかに「月次の売上実績集計」「新人向け技術研修の実施」「クレーム一次対応」もAI化候補として挙がった。Discoveryの2段階のフィルタリングを踏まえた判断として、最も適切なものはどれか。",
+    o: [
+      "4つのうち最も月間工数が大きい業務を選ぶ。ボトルネックであることが選定の決定的な条件である。",
+      "ボトルネックであることを確認したうえで、非構造化データ・文脈判断・ミスの許容度の3基準でAI適合性を診断し、両方を満たす業務を選ぶ。",
+      "売上実績集計は定型的で工数も読めるうえ、効果を数値で示しやすいため、最初の対象として最も適している。",
+      "技術研修は人が介在する工程が多く改善余地が大きいため、効果の大きさを優先して対象にする。"
+    ],
+    a: 1,
+    src: "Chapter6 Step1 Discovery（ボトルネック特定とAI適合性診断）",
+    exp: "Discoveryの核心は「ボトルネックであり、かつAIエージェントに向いている業務を選ぶ」という2段階のフィルタです。Aはボトルネックだけで決めており1段目で止まっています。Cの売上実績集計は構造化データの集計が中心で、従来のシステムで足ります。Dの研修は対人関係が本質的な業務でAI適合性が低い領域です。"
+  },
+  {
+    q: "経営層は「3ヶ月以内に目に見える成果」を求めており、AI適合性を満たす候補が複数残った。着手順の決め方として最も適切なものはどれか。",
+    o: [
+      "技術的難易度が最も高い候補から着手し、実現できることを示して社内の信頼と次年度の予算を得る。",
+      "「効果の大きさ」と「実現のしやすさ」の2軸で整理し、効果が大きく実現しやすい候補を最優先にする。",
+      "候補すべてに同時に着手し、最も早く成果が出たものを本格展開の対象にする。",
+      "経営層の関心が最も高い候補から着手し、予算の確保を優先する。"
+    ],
+    a: 1,
+    src: "Chapter6 Step1 Discovery（優先順位マトリクス）",
+    exp: "限られたリソースで成果を出すには、効果が大きく実現が容易な領域から着手します。効果が大きく実現が難しいものは中長期の検討対象。Aは成果が出るまでに時間がかかり支持を失います。Cはリソースが分散します。Dは関心の高さを効果や実現性の代わりにしています。"
+  }
+  ]
+},
+{
+  title: "ケース2：北陸みらい銀行のコールセンター",
+  html: `
+<h3>ケース2　株式会社北陸みらい銀行</h3>
+<p><b>会社概要</b>　地方銀行。個人向けコールセンターにオペレーター32名が在籍し、住宅ローン・投資信託・各種手続きの問い合わせに対応している。応対品質は高いが、繁忙期の待ち時間が課題になっている。</p>
+
+<p><b>現状のコールセンター業務</b></p>
+<table>
+  <tr><th>項目</th><th class="num">実績</th></tr>
+  <tr><td>月間入電件数</td><td class="num">18,000件</td></tr>
+  <tr><td>1件あたり通話時間</td><td class="num">6分</td></tr>
+  <tr><td>1件あたり後処理（履歴入力・ナレッジ参照）</td><td class="num">4分</td></tr>
+  <tr><td>オペレーター数</td><td class="num">32名</td></tr>
+  <tr><td>月間総工数</td><td class="num">3,000時間</td></tr>
+  <tr><td>入電のうちFAQで答えられる定型問い合わせの比率</td><td class="num">45%</td></tr>
+</table>
+
+<p><b>保有している情報資産</b></p>
+<table>
+  <tr><th>資産</th><th>形式・状態</th></tr>
+  <tr><td>商品約款・事務手続マニュアル</td><td>PDF 計約1,100ページ。章・節の見出しは付いているが、更新日やカテゴリの属性情報は付与されていない</td></tr>
+  <tr><td>応対履歴</td><td>CRMのテーブル。顧客ID・商品コード・対応区分・対応日時</td></tr>
+  <tr><td>FAQ集</td><td>Excel。質問と回答が1行1組。カテゴリ列は半分が空欄</td></tr>
+  <tr><td>ベテランの応対メモ</td><td>個人のOneDrive。ファイル名は「メモ」「メモ2」「最新版_修正」など</td></tr>
+  <tr><td>AIの回答結果を後続システムへ渡す仕様</td><td>JSON（カテゴリ・回答・確信度）</td></tr>
+</table>
+
+<p><b>PoCの経過</b></p>
+<ul>
+  <li>約款PDFをそのままRAGに取り込み、オペレーター支援用の回答案提示を6週間試行した。</li>
+  <li>オペレーター8名に使ってもらったところ、回答案の採用率は22%にとどまった。</li>
+  <li>ヒアリングでは次の声が出た。「出てくる条文が質問と関係ないことが多い」「条文は合っているのに、回答文が長すぎてそのまま使えない」「通話中に画面を見る余裕がない」「AIに頼ると自分の説明力が落ちる気がする」。</li>
+  <li>PoC前に測った指標は入電件数のみで、1件あたりの処理時間は記録していなかった。</li>
+  <li>経営層は「正答率が80%を超えたら成功」とだけ合意していた。</li>
+  <li>推進体制は定まっておらず、営業企画部が各支店の個別の依頼に都度対応している。コンプライアンス部門は全社基準の統一を求めている。</li>
+</ul>
+`,
+  qs: [
+  {
+    q: "北陸みらい銀行が保有する情報資産について、データの種類と処理の担い手の組み合わせとして最も適切なものはどれか。",
+    o: [
+      "約款PDF＝構造化データでAPI取得、応対履歴＝非構造化データでLLM処理、JSON＝半構造化データでシステム連携",
+      "約款PDF＝非構造化データでLLM処理、応対履歴＝構造化データでAPI取得、JSON＝半構造化データでAI入出力とシステム連携",
+      "約款PDF・応対履歴・JSONはいずれも非構造化データであり、すべてLLMに入力して処理する",
+      "約款PDF＝半構造化データ、応対履歴＝構造化データ、JSON＝構造化データ"
+    ],
+    a: 1,
+    src: "Section13 データの種類と特性",
+    exp: "約款PDFは明確な構造を持たない非構造化データで、意味の解釈はLLMの領域。応対履歴はCRMのテーブルで項目とデータ型が定まった構造化データなので、APIで取得してプロンプトのコンテキストに足すのが効率的。JSONはキーと値で部分的に整理された半構造化データで、AIの入出力とシステム連携のインターフェースになります。Dの約款PDFは見出しがあっても行と列やキーで整理されたデータではありません。"
+  },
+  {
+    q: "約款PDF 1,100ページをRAGのナレッジベースに取り込む際のチャンク設計として、最も適切なものはどれか。",
+    o: [
+      "1ページを1チャンクとして機械的に分割する。分量が均一になり、検索の比較がしやすくなる。",
+      "1,100ページを1チャンクとして取り込む。文脈が途切れず、LLMが全体を踏まえて回答できる。",
+      "1つのトピックが1つのチャンクに収まるよう、節や見出しの単位で分割し、各チャンクにカテゴリ・対象商品・最終更新日のメタデータを付与する。",
+      "文字数を50字程度の細かい単位にそろえて分割する。細かいほど検索の精度が上がる。"
+    ],
+    a: 2,
+    src: "Section14 RAGの仕組み（保存フェーズ）／Section13 メタデータ",
+    exp: "チャンクは大きすぎると複数トピックが混在してノイズになり、小さすぎると文脈が失われます。目安は「1トピック＝1チャンク」で、マニュアルなら見出し単位。あわせてメタデータを付与すると、質問に合うチャンクを優先的に返せます。Aのページ単位はトピックの境界と無関係。Bは検索の役割を失わせ、Dは文脈を壊します。"
+  },
+  {
+    q: "PoCで出た「出てくる条文が質問と関係ないことが多い」と「条文は合っているのに回答文が長すぎてそのまま使えない」という2つの声について、改善の考え方として最も適切なものはどれか。",
+    o: [
+      "どちらもRAGの精度不足なので、まずLLMをより高性能なモデルに差し替えて両方の改善を図る。",
+      "前者は検索精度、後者は生成精度の問題として切り分け、それぞれ別の打ち手を検討する。",
+      "どちらも生成精度の問題なので、プロンプトの指示を詳細化することで両方を解決する。",
+      "どちらも検索精度の問題なので、チャンクを細かく分割し直すことで両方を解決する。"
+    ],
+    a: 1,
+    src: "Section14 RAGの精度を左右する二つの段階",
+    exp: "RAGの精度は検索と生成の2段階で測り、どちらに原因があるかを切り分けるのが改善の出発点です。「関係ない条文が出る」は欲しいチャンクが取れていない検索側の問題、「条文は合っているのに使えない」は取れた情報を回答に活かせていない生成側の問題。両者を区別せずに対処すると、原因でない側を改善し続けることになります。"
+  },
+  {
+    q: "ベテランの応対メモ（個人のOneDrive、ファイル名が「メモ」「最新版_修正」など）の扱いについて、最も適切な方針はどれか。",
+    o: [
+      "過去のファイルすべてをさかのぼって命名規則とメタデータを整備し、整備が完了してからRAGへの取り込みを始める。",
+      "ファイル名は検索の対象にならないため、内容をそのまま取り込めば十分であり、命名の整備は不要である。",
+      "今後作成・更新する文書について、日付と分類をファイル名に含め、カテゴリなどの属性を付ける運用を定着させる。既存分は価値の高いものから段階的に移す。",
+      "個人のOneDriveにある文書は暗黙知であり形式知化できないため、RAGの対象から外す。"
+    ],
+    a: 2,
+    src: "Section16 AIエージェントが読みやすいデータを作る／Section12 ナレッジマネジメント",
+    exp: "過去のデータをすべてさかのぼって整備するのは現実的でないことが多く、重要なのは今後作成・更新するデータをAIが読み取りやすい形で蓄積する運用を定着させることです。データ整備は導入の準備ではなく導入の一部。Aは整備完了を待って着手が遅れます。Bはメタデータが検索精度を左右する点を無視。Dは暗黙知の形式知化そのものを諦めています。"
+  },
+  {
+    q: "経営層と「正答率80%を超えたら成功」とだけ合意していた点について、成功定義の立て方として最も適切なものはどれか。",
+    o: [
+      "精度は最も客観的に測れる指標なので、まず正答率で合意し、定着と効果はPoCの結果が出てから定義する。",
+      "どの業務効果を出したいかを先に定義し、そこから逆算して必要な定着水準、さらにそこから必要な精度水準を決める。",
+      "3つの層は同時に並行して定義し、関係者それぞれが重視する指標をそのまま採用する。",
+      "精度が出れば使われ、使われれば効果が出るという順序で達成されるため、定義も精度層から順に積み上げる。"
+    ],
+    a: 1,
+    src: "Section18 成功の定義：3層フレームワーク",
+    exp: "定義はトップダウン（効果層→定着層→精度層）、達成はボトムアップ（精度→定着→効果）という二重構造が核心です。効果層が決まっていない状態で置いた精度目標は根拠のない数字になります。Dは達成の順序を定義の順序に持ち込んだ誤りで、本ケースが陥っている状態そのものです。"
+  },
+  {
+    q: "PoCで出た「AIに頼ると自分の説明力が落ちる気がする」という声に対する打ち手として、最も適切なものはどれか。",
+    o: [
+      "精度への不信感なので、正答率の目標値を引き上げて改善する。",
+      "UXの問題なので、画面の表示項目を減らして操作を簡素化する。",
+      "業務フローへの不適合なので、AIに相談するタイミングを通話後に移す。",
+      "心理的抵抗なので、変革管理の問題として扱い、変化後にその人の経験が活きる役割を具体的に示す。"
+    ],
+    a: 3,
+    src: "Section18 定着層（「使いたくない」理由の4分類）／Section26 チェンジマネジメント",
+    exp: "「使いたくない」理由は、精度への不信感・UXの問題・業務フローへの不適合・心理的抵抗の4つに分かれ、どれなのかを特定することが次の打ち手を決めます。スキルが落ちる不安は心理的抵抗で、変革管理の領域。精度を上げれば使われると判断するのは原因の誤診です。なお「通話中に画面を見る余裕がない」は業務フローへの不適合、「回答文が長すぎる」はUXの問題にあたります。"
+  },
+  {
+    q: "6週間のPoCで回答案の採用率が22%だった。この数値の扱い方として最も適切なものはどれか。",
+    o: [
+      "6週間の定量データで定着が見込めないことが示されたため、本運用への移行を見送る判断根拠として用いる。",
+      "短期間の定量指標は解釈が難しいため、PoC中は定性的な代理指標で定着の見通しを評価し、定量検証は本運用で行う。",
+      "採用率は精度層の指標なので、正答率が80%に達していれば採用率の低さは問題にしない。",
+      "採用率が低いのはサンプルが8名と少ないためであり、対象を32名全員に広げて同じ指標を測り直す。"
+    ],
+    a: 1,
+    src: "Section18 定着層（PoCと本運用で測定方法を変える）",
+    exp: "PoC期間中の定量的な定着指標は解釈が難しく、数値だけでは原因が判別できません。PoCでは「本番でも使ってくれそうか」を定性的に掴み、定量検証は本運用で行うという割り切りが現実的です。Aは短期の定量値で結論を出しています。Cは採用率を精度層の指標と誤認しています。Dは原因を母数の問題に帰しており、ヒアリングで既に出ている理由を使っていません。"
+  },
+  {
+    q: "本運用の効果見込みを試算する。FAQで答えられる定型問い合わせ（入電の45%）のうち60%がAIの自己解決で完結して有人対応が不要になり、残る有人対応では回答案の提示により後処理が1件4分から1.5分に短縮されるとする。月間3,000時間はおよそどれだけ削減されるか。",
+    o: [
+      "約810時間",
+      "約1,358時間",
+      "約1,560時間",
+      "約1,763時間"
+    ],
+    a: 1,
+    src: "Section18 効果層（ベースライン測定）／Section6 導入価値",
+    exp: "FAQ型＝18,000×45%＝8,100件。自己解決＝8,100×60%＝4,860件で、1件10分が丸ごと不要になり 4,860×10÷60＝810時間。有人対応は 18,000−4,860＝13,140件で、後処理が2.5分短縮され 13,140×2.5÷60＝547.5時間。合計<b>約1,358時間</b>（約45%）。810時間は自己解決分だけ、1,763時間はFAQ型の全件が自己解決すると誤った値、1,560時間は後処理の短縮を自己解決済みの件数にも重ねて数えた値です。"
+  },
+  {
+    q: "PoC前に測っていた指標は入電件数のみで、1件あたりの処理時間は記録していなかった。この点について最も適切な指摘はどれか。",
+    o: [
+      "導入後に処理時間を測れば改善幅は算出できるため、事前の記録がなくても問題にはならない。",
+      "ベースラインがなければ改善の程度を客観的に示せないため、PoC開始前に現状を数値で記録しておく必要があった。",
+      "ベースラインは精度層の指標なので、効果層の評価には影響しない。",
+      "入電件数が記録されていれば効果層の測定は成立するため、追加の記録は不要である。"
+    ],
+    a: 1,
+    src: "Section18 効果層（ベースライン測定の重要性）",
+    exp: "効果層で最も起きやすいミスが、導入前のベースラインを測っていないことです。ベースラインがなければ導入後にどれだけ改善したかを客観的に示せません。測定項目は平均処理時間、一定期間あたりの対応件数、担当者数やコスト、クレーム件数やエラー率などの品質指標。Aは比較対象が存在しない点を見落としています。"
+  },
+  {
+    q: "推進体制が定まっておらず、営業企画部が各支店の個別依頼に都度対応している一方、コンプライアンス部門は全社基準の統一を求めている。体制の選択についての判断として最も適切なものはどれか。",
+    o: [
+      "分散型を採る。現場のニーズに近い支店が自ら意思決定するため最も速く、当事者意識も高まる。",
+      "中央集権型を採る。統制が効き品質と一貫性が保たれるため、意思決定の速さや現場の当事者意識が損なわれることはない。",
+      "中央が基準・ガイドライン・共通基盤を整え、各部門はその枠内で導入を進めるハイブリッド型を採る。枠組みの厳格さが論点になる。",
+      "まず分散型で全支店が自由に試し、数が揃った段階で中央集権型へ一括で切り替える。"
+    ],
+    a: 2,
+    src: "Section24 AIエージェント推進の組織類型",
+    exp: "中央集権型の強み（ガバナンスの統一・ナレッジの集約・野良エージェントの防止）はそのまま分散型の弱みで、逆もまた同じという逆転関係にあります。規制業種で統一が求められ、かつ現場の個別ニーズもある本ケースでは、中央が枠組みを整え各部門がその中で進めるハイブリッド型が適し、枠組みの厳格さの度合いが設計上の論点になります。Bは中央集権型の弱み（遅さ・現場の当事者意識の低下）を否定しており、逆転関係に反します。Aは統制不足とツールの乱立を招きます。"
+  }
+  ]
+}
+];
+
+/* =========================================================
+   状態とロジック
+   ========================================================= */
+let Q = [];           // {caseIdx, qIdx, ...}
+let answers = [];     // number|null
+let flags = [];       // bool
+let cur = 0;
+let secsLeft = 0, totalSecs = 0, timerId = null, started = 0;
+
+/* 選択肢は毎回シャッフルする。原データは正解の位置が偏っており、
+   位置そのものが手がかりになってしまうため（本番の練習にならない）。 */
+function shuffled(q){
+  const idx = q.o.map((_, i) => i);
+  for (let i = idx.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [idx[i], idx[j]] = [idx[j], idx[i]];
+  }
+  // _map[表示位置] = 元の位置。解説は元の記号（A〜D）で書かれているため、
+  // 採点画面では元の並びに戻して提示する。
+  return { ...q, o: idx.map(i => q.o[i]), a: idx.indexOf(q.a), _orig: q.o, _origA: q.a, _map: idx };
+}
+
+function begin(which){
+  Q = [];
+  CASES.forEach((c, ci) => {
+    if (which === 'both' || which === ci) {
+      c.qs.forEach((q, qi) => Q.push({ci:ci, qi:qi, ...shuffled(q)}));
+    }
+  });
+  answers = Q.map(() => null);
+  flags = Q.map(() => false);
+  cur = 0;
+  totalSecs = (which === 'both') ? 38*60 : 19*60;
+  secsLeft = totalSecs;
+  started = Date.now();
+  document.getElementById('start').classList.add('hide');
+  document.getElementById('exam').classList.remove('hide');
+  secsLeft++; tick();            // 開始直後から正しい残り時間を表示する
+  timerId = setInterval(tick, 1000);
+  render();
+  window.scrollTo(0,0);
+}
+
+function tick(){
+  secsLeft--;
+  const t = document.getElementById('timer');
+  const a = Math.abs(secsLeft);
+  const s = (secsLeft < 0 ? '+' : '') + String(Math.floor(a/60)).padStart(2,'0') + ':' + String(a%60).padStart(2,'0');
+  t.textContent = s;
+  t.className = 'timer' + (secsLeft < 0 ? ' over' : (secsLeft < 180 ? ' warn' : ''));
+}
+
+function render(){
+  const q = Q[cur];
+  document.getElementById('casepane').innerHTML = CASES[q.ci].html;
+  document.getElementById('qno').textContent = '問' + (cur+1);
+  document.getElementById('qmeta').textContent = CASES[q.ci].title;
+  document.getElementById('qtext').textContent = q.q;
+  document.getElementById('progress').textContent =
+    '回答 ' + answers.filter(a => a !== null).length + ' / ' + Q.length +
+    '　フラグ ' + flags.filter(Boolean).length;
+
+  const box = document.getElementById('opts');
+  box.innerHTML = '';
+  q.o.forEach((text, i) => {
+    const lab = document.createElement('label');
+    lab.className = 'opt' + (answers[cur] === i ? ' sel' : '');
+    lab.innerHTML = '<input type="radio" name="o" ' + (answers[cur] === i ? 'checked' : '') + '>' +
+                    '<span class="lab">' + 'ABCD'[i] + '</span><span></span>';
+    lab.querySelectorAll('span')[1].textContent = text;
+    lab.onclick = () => { answers[cur] = i; render(); };
+    box.appendChild(lab);
+  });
+
+  document.getElementById('flagBtn').textContent = flags[cur] ? 'フラグ解除' : 'フラグ';
+  document.getElementById('prevBtn').disabled = (cur === 0);
+  document.getElementById('nextBtn').disabled = (cur === Q.length - 1);
+  if (document.getElementById('reviewBox').style.display !== 'none') drawGrid();
+}
+
+function go(d){
+  const n = cur + d;
+  if (n < 0 || n >= Q.length) return;
+  cur = n; render();
+}
+function toggleFlag(){ flags[cur] = !flags[cur]; render(); }
+
+function showReview(){
+  const b = document.getElementById('reviewBox');
+  b.style.display = (b.style.display === 'none') ? 'block' : 'none';
+  if (b.style.display === 'block') drawGrid();
+}
+function drawGrid(){
+  const g = document.getElementById('reviewGrid');
+  g.innerHTML = '';
+  Q.forEach((q, i) => {
+    const d = document.createElement('div');
+    let cls = 'cell';
+    if (flags[i]) cls += ' flagged';
+    else if (answers[i] !== null) cls += ' done';
+    if (i === cur) cls += ' cur';
+    d.className = cls;
+    d.textContent = i + 1;
+    d.onclick = () => { cur = i; render(); };
+    g.appendChild(d);
+  });
+}
+
+document.addEventListener('keydown', e => {
+  if (document.getElementById('exam').classList.contains('hide')) return;
+  if (e.key >= '1' && e.key <= '4') { answers[cur] = +e.key - 1; render(); }
+  if (e.key === 'ArrowRight') go(1);
+  if (e.key === 'ArrowLeft') go(-1);
+  if (e.key === 'f') toggleFlag();
+});
+
+function finish(){
+  const unanswered = answers.filter(a => a === null).length;
+  if (unanswered > 0 && !confirm('未回答が ' + unanswered + ' 問あります。採点しますか？')) return;
+  clearInterval(timerId);
+  const elapsed = Math.round((Date.now() - started) / 1000);
+
+  let correct = 0;
+  answers.forEach((a, i) => { if (a === Q[i].a) correct++; });
+  const pts = correct * 2;
+  const rate = Math.round(correct / Q.length * 100);
+
+  document.getElementById('scoreVal').textContent = pts + ' / ' + (Q.length*2);
+  document.getElementById('rateVal').textContent = rate + '%';
+  document.getElementById('convVal').textContent = Math.round(rate / 100 * 80) + ' / 80';
+  document.getElementById('timeVal').textContent =
+    Math.floor(elapsed/60) + '分' + String(elapsed%60).padStart(2,'0') + '秒';
+
+  const over = elapsed - totalSecs;
+  let v = '';
+  if (rate >= 80) v = 'ケース問題の読解と判断は仕上がっています。';
+  else if (rate >= 65) v = '合格ラインの推定帯（65〜70点）に乗る水準です。落とした論点を潰せば余裕が出ます。';
+  else v = '本番のケース4本で80点のうち取りこぼしが大きくなる水準です。下の弱点内訳の論点を優先してください。';
+  v += over > 0
+    ? ' 時間は配分を ' + Math.floor(over/60) + '分' + String(over%60).padStart(2,'0') + '秒 超過しました。本番では1問90秒で切り上げる運用が必須です。'
+    : ' 時間は配分内に収まりました。';
+  document.getElementById('verdict').textContent = v;
+
+  const wrong = [];
+  answers.forEach((a, i) => { if (a !== Q[i].a) wrong.push(Q[i].src); });
+  const wb = document.getElementById('weakBox');
+  if (wrong.length === 0) {
+    wb.innerHTML = '<p style="margin:0">全問正解。落とした論点はありません。</p>';
+  } else {
+    const counts = {};
+    wrong.forEach(s => { counts[s] = (counts[s] || 0) + 1; });
+    let h = '<p class="muted" style="margin-top:0">落とした問の出典Section（直前に読み返す順）</p><ul class="chk">';
+    Object.keys(counts).sort((x,y) => counts[y]-counts[x]).forEach(s => {
+      h += '<li><b>' + s + '</b>　<span class="muted">' + counts[s] + '問</span></li>';
+    });
+    wb.innerHTML = h + '</ul>';
+  }
+
+  const ex = document.getElementById('explain');
+  ex.innerHTML = '';
+  Q.forEach((q, i) => {
+    const ok = (answers[i] === q.a);
+    const d = document.createElement('div');
+    d.className = 'res ' + (ok ? 'ok' : 'ng');
+    // 解説は元の記号で書かれているので、元の並びに戻して表示する
+    const mineOrig = answers[i] === null ? null : q._map[answers[i]];
+    d.innerHTML =
+      '<div><span class="tag ' + (ok ? 'ok' : 'ng') + '">' + (ok ? '正解' : '不正解') + '</span>' +
+      '<span class="tag">' + q.src + '</span></div>' +
+      '<h3 style="margin:6px 0"></h3>' +
+      '<p class="muted" style="margin:0 0 6px">あなたの解答：' +
+        (mineOrig === null ? '未回答' : 'ABCD'[mineOrig]) + '／正解：' + 'ABCD'[q._origA] + '</p>' +
+      '<ul class="chk" style="margin:0 0 10px"></ul>' +
+      '<p style="margin:0">' + q.exp + '</p>';
+    d.querySelector('h3').textContent = '問' + (i+1) + '　' + q.q;
+    const ul = d.querySelector('ul');
+    q._orig.forEach((text, oi) => {
+      const li = document.createElement('li');
+      const mark = (oi === q._origA ? '正解' : (oi === mineOrig ? 'あなたの解答' : ''));
+      li.innerHTML = '<b>' + 'ABCD'[oi] + '</b>　<span></span>' +
+        (mark ? ' <span class="tag ' + (oi === q._origA ? 'ok' : 'ng') + '">' + mark + '</span>' : '');
+      li.querySelector('span').textContent = text;
+      ul.appendChild(li);
+    });
+    ex.appendChild(d);
+  });
+
+  document.getElementById('exam').classList.add('hide');
+  document.getElementById('result').classList.remove('hide');
+  window.scrollTo(0,0);
+}
+
+function jumpChecklist(){
+  document.getElementById('start').classList.add('hide');
+  document.getElementById('exam').classList.add('hide');
+  document.getElementById('result').classList.add('hide');
+  document.getElementById('checklist').classList.remove('hide');
+  window.scrollTo(0,0);
+}
+</script>
+</body>
+</html>
